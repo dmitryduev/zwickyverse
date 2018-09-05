@@ -8,7 +8,7 @@
     <meta name="description" content="Zwickyverse">
     <meta name="author" content="Dr. Dmitry A. Duev">
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/static/img/ztf_logo.png"/>
+    <link rel="icon" type="image/png" href="/code/static/img/ztf_logo.png"/>
 
     <title>Zwickyverse{% block title %}{% endblock %}</title>
 
@@ -31,6 +31,7 @@
 
     {# jquery #}
     <script src="{{-script_root-}}/static/js/jquery-3.2.1.min.js"></script>
+    <script src="{{-script_root-}}/static/js/jquery.serializejson.min.js"></script>
 
 </head>
 
@@ -51,6 +52,27 @@
                 <a class="nav-link" href="/">Home</a>
             </li>
         </ul>
+
+        <ul class="navbar-nav navbar-right">
+            {% if user != None %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Logged in as <strong>{{ user }}</strong>
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        {% if user == 'admin' %}
+                            <a class="dropdown-item" href="{{-script_root-}}/users">Manage users</a>
+                        {% endif %}
+                        <a class="dropdown-item" href="{{-script_root-}}/logout">Log out</a>
+                    </div>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/login">Login</a>
+                </li>
+            {% endif %}
+        </ul>
     </div>
 </nav>
 
@@ -64,7 +86,7 @@
     <div class="container">
         <div class="row">
             <span class="text-muted mx-auto">
-                &copy; ZTF 2018 <a href="https://github.com/dmitryduev/deep-asteroids" class="text-secondary"
+                &copy; ZTF 2018 <a href="https://github.com/dmitryduev/zwickyverse" class="text-secondary"
                                    target="_blank"><i class="fab fa-github"></i></a>
             </span>
         </div>
