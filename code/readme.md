@@ -66,7 +66,7 @@ Build and launch the main container:
 docker build -t zwickyverse:latest -f Dockerfile .
 docker run --name zwickyverse -d --restart always -p 8000:4000 -v zwickyverse-volume:/data --link zwickyverse-mongo:mongo zwickyverse:latest
 # test mode:
-docker run -it --rm --name zwickyverse -p 8000:4000 -v zwickyverse-volume:/data --link ztf-wd-mongo:mongo ztf-wd:latest
+docker run -it --rm --name zwickyverse -p 8000:4000 -v zwickyverse-volume:/data --link zwickyverse-mongo:mongo zwickyverse:latest
 ```
 
 The service will be available on port 8000 of the `Docker` host machine
