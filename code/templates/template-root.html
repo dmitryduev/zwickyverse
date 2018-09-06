@@ -53,6 +53,7 @@
                     </p>
 
                     <div class="accordion mb-2" id="{{-project-}}_accordion">
+
                         <div class="card">
                             <div class="card-header" id="headingOne">
                                 <h5 class="mb-0">
@@ -65,43 +66,45 @@
 
                             <div id="collapseOne" class="collapse" aria-labelledby="headingOne"
                                  data-parent="#{{-project-}}_accordion">
-                                <div class="card-body">
-                                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
-                                    richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor
-                                    brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt
-                                    aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et.
-                                    Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente
-                                    ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer
-                                    farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them
-                                    accusamus labore sustainable VHS.
+                                <div class="card-body" style="max-height: 400px; overflow-x: hidden; overflow-y: scroll">
+                                    {% for class in projects[project]['classes'] %}
+                                        <span>{{ class }} <a href="#"><i class="fas fa-times"></i></a></span><br>
+                                    {% endfor %}
+                                    {% if projects[project]['classes'] | length > 0 %}
+                                        <br>
+                                    {% endif %}
+                                    <a href="#" class="btn btn-sm btn-primary"
+                                            data-toggle="modal" data-target="#editUserModal"><i class="fas fa-plus"></i> Add data class</a>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="card">
-                            <div class="card-header" id="headingTwo">
-                                <h5 class="mb-0">
-                                    <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                                            data-target="#collapseTwo" aria-expanded="false"
-                                            aria-controls="collapseTwo">
-                                        Users
-                                    </button>
-                                </h5>
-                            </div>
-                            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo"
-                                 data-parent="#{{-project-}}_accordion">
-                                <div class="card-body">
-                                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
-                                    richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor
-                                    brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt
-                                    aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et.
-                                    Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente
-                                    ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer
-                                    farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them
-                                    accusamus labore sustainable VHS.
+                        {% if projects[project]['role'] == 'admin' %}
+                            <div class="card">
+                                <div class="card-header" id="headingTwo">
+                                    <h5 class="mb-0">
+                                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+                                                data-target="#collapseTwo" aria-expanded="false"
+                                                aria-controls="collapseTwo">
+                                            Users
+                                        </button>
+                                    </h5>
+                                </div>
+                                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo"
+                                     data-parent="#{{-project-}}_accordion">
+                                    <div class="card-body" style="max-height: 200px; overflow-x: hidden; overflow-y: scroll">
+                                        {% for user in projects[project]['users'] %}
+                                            <span>{{ user }} <a href="#"><i class="fas fa-times"></i></a></span><br>
+                                        {% endfor %}
+                                        {% if projects[project]['users'] | length > 0 %}
+                                            <br>
+                                        {% endif %}
+                                        <a href="#" class="btn btn-sm btn-primary"
+                                                data-toggle="modal" data-target="#editUserModal"><i class="fas fa-plus"></i> Add user</a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        {% endif %}
 
                         <div class="card">
                             <div class="card-header" id="heading3">
@@ -116,98 +119,61 @@
                             <div id="collapse3" class="collapse show" aria-labelledby="heading3"
                                  data-parent="#{{-project-}}_accordion">
                                 <div class="card-body">
-                                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
-                                    richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor
-                                    brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt
-                                    aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et.
-                                    Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente
-                                    ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer
-                                    farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them
-                                    accusamus labore sustainable VHS.
+                                    {% for dataset in projects[project]['datasets'] %}
+                                        <div class="col-md-12">
+                                            <h4>
+                                                {{ dataset }}
+                                                <button type="button" class="btn btn-sm btn-outline-dark"
+                                                        data-toggle="modal" data-target="#editUserModal"
+                                                        data-user="{{ u }}">classify</button>
+                                                {% if projects[project]['role'] == 'admin' %}
+                                                    <button type="button" class="btn btn-sm btn-outline-dark"
+                                                            data-toggle="modal" data-target="#editUserModal"
+                                                            data-user="{{ u }}">inspect</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                                            data-toggle="modal" data-target="#editUserModal"
+                                                            data-user="{{ u }}">edit</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            data-user="{{ u }}">remove</button>
+                                                {% endif %}
+                                            </h4>
+                                            {% if projects[project]['datasets'][dataset]['description'] != None %}
+                                                <p>
+                                                    {{ projects[project]['datasets'][dataset]['description'] }}
+                                                </p>
+                                            {% endif %}
+                                            {% if projects[project]['datasets'][dataset]['data'] | length > 0 %}
+                                                <p>
+                                                    <a class="btn btn-sm btn-outline-dark" data-toggle="collapse"
+                                                       href="#{{-project-}}_{{-dataset-}}_files" role="button"
+                                                       aria-expanded="false" aria-controls="{{-project-}}_{{-dataset-}}_files">
+                                                        Files <i class="fas fa-caret-down"></i>
+                                                    </a>
+                                                </p>
+                                                <div class="collapse" id="{{-project-}}_{{-dataset-}}_files">
+                                                    <div class="card">
+                                                        <div class="card-body p-1 pl-3" style="max-height: 200px; overflow-x: hidden;
+                                                                                                    overflow-y: scroll">
+                                                            {% for file in projects[project]['datasets'][dataset]['data'] %}
+                                                                <span>{{ file }}{#<a href="#"><i class="fas fa-times"></i></a>#}</span><br>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {% if projects[project]['role'] == 'admin' %}
-                        <p>
-                            <a class="btn btn-sm btn-outline-dark" data-toggle="collapse"
-                               href="#{{-project-}}_users" role="button"
-                               aria-expanded="false" aria-controls="{{-project-}}_files">
-                                Users <i class="fas fa-caret-down"></i>
-                            </a>
-                        </p>
-                        <div class="collapse" id="{{-project-}}_users">
-                            <div class="card mb-2">
-                                <div class="card-body p-1 pl-3" style="max-height: 200px; overflow-x: hidden;
-                                                                            overflow-y: scroll">
-                                    {% for user in projects[project]['users'] %}
-                                        <span>{{ user }} <a href="#"><i class="fas fa-times"></i></a></span><br>
-                                    {% endfor %}
-                                    {% if projects[project]['users'] | length > 0 %}
-                                        <br>
-                                    {% endif %}
-                                    <a href="#" class="btn btn-sm btn-primary"
-                                            data-toggle="modal" data-target="#editUserModal"><i class="fas fa-plus"></i> Add user</a>
-                                </div>
-                            </div>
-                        </div>
-                    {% endif %}
                 </div>
-                {% for dataset in projects[project]['datasets'] %}
-                    <div class="col-md-12 pl-5 mb-2">
-                        <h4>
-                            {{ dataset }}
-                            <button type="button" class="btn btn-sm btn-outline-dark"
-                                    data-toggle="modal" data-target="#editUserModal"
-                                    data-user="{{ u }}">classify</button>
-                            {% if projects[project]['role'] == 'admin' %}
-                                <button type="button" class="btn btn-sm btn-outline-dark"
-                                        data-toggle="modal" data-target="#editUserModal"
-                                        data-user="{{ u }}">inspect</button>
-                                <button type="button" class="btn btn-sm btn-outline-primary"
-                                        data-toggle="modal" data-target="#editUserModal"
-                                        data-user="{{ u }}">edit</button>
-                                <button type="button" class="btn btn-sm btn-outline-danger"
-                                        data-user="{{ u }}">remove</button>
-                            {% endif %}
-                        </h4>
-                        {% if projects[project]['datasets'][dataset]['description'] != None %}
-                            <p>
-                                {{ projects[project]['datasets'][dataset]['description'] }}
-                            </p>
-                        {% endif %}
-                        {% if projects[project]['datasets'][dataset]['data'] | length > 0 %}
-                            <p>
-                                <a class="btn btn-sm btn-outline-dark" data-toggle="collapse"
-                                   href="#{{-project-}}_{{-dataset-}}_files" role="button"
-                                   aria-expanded="false" aria-controls="{{-project-}}_{{-dataset-}}_files">
-                                    Files <i class="fas fa-caret-down"></i>
-                                </a>
-                            </p>
-                            <div class="collapse" id="{{-project-}}_{{-dataset-}}_files">
-                                <div class="card">
-                                    <div class="card-body p-1 pl-3" style="max-height: 200px; overflow-x: hidden;
-                                                                                overflow-y: scroll">
-                                        {% for file in projects[project]['datasets'][dataset]['data'] %}
-                                            <span>{{ file }}{#<a href="#"><i class="fas fa-times"></i></a>#}</span><br>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </div>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-                {% if projects[project]['role'] == 'admin' %}
-                    <div class="col-md-12 pl-5">
-                        <button type="button" class="btn btn-sm btn-primary"
-                                data-toggle="modal" data-target="#editUserModal"
-                                data-user="{{ u }}"><i class="fas fa-plus"></i> New dataset</button>
-                    </div>
-                {% endif %}
-                <div class="col-md-12 mb-2">
-                    <hr>
-                </div>
+
+{#                #}
+{#                <div class="col-md-12 mb-2">#}
+{#                    <hr>#}
+{#                </div>#}
             </div>
         {% endfor %}
     </div>
