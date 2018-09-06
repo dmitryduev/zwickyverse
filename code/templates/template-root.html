@@ -31,7 +31,7 @@
     {% if projects != None %}
     <div class="container">
         <button type="button" class="btn btn-md btn-primary addButton"
-                data-toggle="modal" data-target="#addUserModal"
+                data-toggle="modal" data-target="#addProjectModal"
                 data-user="{{ u }}"><i class="fas fa-plus"></i> New project</button>
         {% for project in projects %}
             <div class="row mt-2">
@@ -40,7 +40,7 @@
                         {{ projects[project]['name'] }}
                         {% if projects[project]['role'] == 'admin' %}
                             <button type="button" class="btn btn-sm btn-outline-primary"
-                                    data-toggle="modal" data-target="#editUserModal"
+                                    data-toggle="modal" data-target="#editProjectModal"
                                     data-user="{{ u }}">
                                 edit</button>
                             <button type="button" class="btn btn-sm btn-outline-danger"
@@ -55,16 +55,18 @@
                     <div class="accordion mb-2" id="{{-project-}}_accordion">
 
                         <div class="card">
-                            <div class="card-header" id="headingOne">
+                            <div class="card-header p-0" id="{{-project-}}_accordion_headingOne">
                                 <h5 class="mb-0">
                                     <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                                            data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                            data-target="#{{-project-}}_accordion_collapseOne" aria-expanded="false"
+                                            aria-controls="{{-project-}}_accordion_collapseOne">
                                         Classes
                                     </button>
                                 </h5>
                             </div>
 
-                            <div id="collapseOne" class="collapse" aria-labelledby="headingOne"
+                            <div id="{{-project-}}_accordion_collapseOne" class="collapse"
+                                 aria-labelledby="{{-project-}}_accordion_headingOne"
                                  data-parent="#{{-project-}}_accordion">
                                 <div class="card-body" style="max-height: 400px; overflow-x: hidden; overflow-y: scroll">
                                     {% for class in projects[project]['classes'] %}
@@ -74,23 +76,24 @@
                                         <br>
                                     {% endif %}
                                     <a href="#" class="btn btn-sm btn-primary"
-                                            data-toggle="modal" data-target="#editUserModal"><i class="fas fa-plus"></i> Add data class</a>
+                                            data-toggle="modal" data-target="#editUserModal"><i class="fas fa-plus"></i> Add data classes</a>
                                 </div>
                             </div>
                         </div>
 
                         {% if projects[project]['role'] == 'admin' %}
                             <div class="card">
-                                <div class="card-header" id="headingTwo">
+                                <div class="card-header p-0" id="{{-project-}}_accordion_headingTwo">
                                     <h5 class="mb-0">
                                         <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                                                data-target="#collapseTwo" aria-expanded="false"
-                                                aria-controls="collapseTwo">
+                                                data-target="#{{-project-}}_accordion_collapseTwo" aria-expanded="false"
+                                                aria-controls="{{-project-}}_accordion_collapseTwo">
                                             Users
                                         </button>
                                     </h5>
                                 </div>
-                                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo"
+                                <div id="{{-project-}}_accordion_collapseTwo" class="collapse"
+                                     aria-labelledby="{{-project-}}_accordion_headingTwo"
                                      data-parent="#{{-project-}}_accordion">
                                     <div class="card-body" style="max-height: 200px; overflow-x: hidden; overflow-y: scroll">
                                         {% for user in projects[project]['users'] %}
@@ -107,16 +110,18 @@
                         {% endif %}
 
                         <div class="card">
-                            <div class="card-header" id="heading3">
+                            <div class="card-header p-0" id="{{-project-}}_accordion_heading3">
                                 <h5 class="mb-0">
                                     <button class="btn btn-link" type="button" data-toggle="collapse"
-                                            data-target="#collapse3" aria-expanded="true" aria-controls="collapse3">
+                                            data-target="#{{-project-}}_accordion_collapse3" aria-expanded="true"
+                                            aria-controls="{{-project-}}_accordion_collapse3">
                                         Datasets
                                     </button>
                                 </h5>
                             </div>
 
-                            <div id="collapse3" class="collapse show" aria-labelledby="heading3"
+                            <div id="{{-project-}}_accordion_collapse3" class="collapse show"
+                                 aria-labelledby="{{-project-}}_accordion_heading3"
                                  data-parent="#{{-project-}}_accordion">
                                 <div class="card-body">
                                     {% for dataset in projects[project]['datasets'] %}
@@ -180,149 +185,71 @@
     {% endif %}
 
 
-    <!-- Modal to add a user-->
-    <div class="modal fade" tabindex="-1" role="dialog" id="addUserModal" >
+    <!-- Project Modal -->
+    <div class="modal fade" tabindex="-1" role="dialog" id="addProjectModal">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add user</h5>
+                    <h5 class="modal-title">Add project</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="tempAddUser">
+                    <form id="addProject">
                         <div class="form-group">
-                            <label for="form-usr">username</label>
-                            <input id="form-usr" type="text" class="form-control"
-                                   name="user" autocomplete="off">
+                            <label for="form-name">Project name</label>
+                            <input id="form-name" type="text" class="form-control"
+                                   name="name" autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label for="form-pwd">password</label>
-                            <div class="input-group show_hide_password">
-                                <input type="password" class="form-control" name="password" id="form-pwd"
-                                       placeholder=""
-                                       autocomplete="off">
-                                <div class="input-group-append">
-                                    <span class="input-group-text">
-                                        <a href=""><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
-                                    </span>
-                                </div>
-                            </div>
+                            <label for="form-name">Project description</label>
+                            <input id="form-name" type="text" class="form-control"
+                                   name="description" autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label for="form-permissions">permissions</label>
-                            <input id="form-permissions" type="text" class="form-control"
-                                   name="permissions" autocomplete="off">
+                            <label for="form-classes">Classes</label>
+                            <input id="form-classes" type="text" class="form-control" placeholder="'class1' 'class2'"
+                                   name="classes" autocomplete="off">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="addUserButton">Add user</button>
+                    <button type="button" class="btn btn-primary" id="addProjectButton">Save</button>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
     <!-- End Modal -->
 
-    <!-- Modal to edit a user-->
-    <div class="modal fade" tabindex="-1" role="dialog" id="editUserModal" >
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit user</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="tempEditUser">
-                        <div class="form-group">
-                            <label for="form-edit-usr">username</label>
-                            <input id="form-edit-usr" type="text" class="form-control"
-                                   name="edit-user" autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label for="form-edit-pwd">password</label>
-                            <div class="input-group show_hide_password">
-                                <input type="password" class="form-control" name="edit-password" id="form-edit-pwd"
-                                       placeholder="leave empty to keep the current password"
-                                       autocomplete="off">
-                                <div class="input-group-append">
-                                    <span class="input-group-text">
-                                        <a href=""><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="form-edit-permissions">permissions</label>
-                            <input id="form-edit-permissions" type="text" class="form-control"
-                                   name="edit-permissions" autocomplete="off">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="editUserButton">Save</button>
-                </div>
-            </div><!-- /.modal-content -->
-        </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
-    <!-- End Modal -->
 
 {% endblock %}
 
 {% block js %}
     <script>
-        function construct_json() {
-            var json = {};
-            $("input:checkbox").each(function() {
-                if ( $(this).is(":checked") ) {
-                    {#alert($(this).val());#}
-                    if (!json.hasOwnProperty($(this).data("id"))) {
-                        json[$(this).data("id")] = [$(this).val()];
+        // send AJAX PUT request to server
+        $('#addProjectButton').click(function (e) {
+            $.ajax({url: '{{-script_root-}}/projects',
+                method: 'PUT',
+                data: JSON.stringify($('#addProject').serializeJSON()),
+                processData: false,
+                contentType: 'application/json',
+                success: function(data) {
+                    if (data === 'success') {
+                        location.reload(true);
                     }
                     else {
-                        json[$(this).data("id")].push($(this).val());
+                        $('#addUserModal').modal('hide');
+                        showFlashingMessage('Info:', data, 'danger');
                     }
+                },
+                error: function(data) {
+                    $('#addUserModal').modal('hide');
+                    showFlashingMessage('Info:', data, 'danger');
                 }
             });
-            return json;
-        }
-
-        // submit query
-        $(document).ready(function() {
-            $('#save').click(function () {
-                bootbox.confirm({
-                    message: "Do you want to submit the query?",
-                    buttons: {
-                        cancel: {
-                            label: '<i class="fas fa-times"></i> Cancel'
-                        },
-                        confirm: {
-                            label: '<i class="fas fa-check"></i> Confirm'
-                        }
-                    },
-                    callback: function (result) {
-                        // console.log('This was logged in the callback: ' + result);
-                        // confirmed? emit request to server:
-                        if (result) {
-                            let json = construct_json();
-                            {#$('#cutouts_form').submit();#}
-                            $.ajax({
-                                type: "POST",
-                                url: '/',
-                                data: JSON.stringify(json),
-                                success: function(data) {
-                                           alert(data['status']);
-                                         }
-                            });
-                        }
-                    }
-                });
-            });
+            return false;
         });
     </script>
 {% endblock %}

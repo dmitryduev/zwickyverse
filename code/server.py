@@ -555,5 +555,49 @@ def root():
         return flask.jsonify({'status': 'success'})
 
 
+@app.route('/projects', methods=['PUT'])
+@flask_login.login_required
+def add_project():
+    """
+        Add new project to DB
+    :return:
+    """
+    try:
+        # print(flask.request.json)
+        name = flask.request.json.get('name', None)
+        description = flask.request.json.get('description', '')
+        classes = flask.request.json.get('classes', '')
+
+        if len(name) == 0 or len(classes) == 0:
+            return 'name and classes must be set'
+
+        classes = classes.split()
+
+        # add to db:
+        project_id = mongo.db.projects.insert_one(
+                        {'name': name,
+                         'description': description,
+                         'classes': classes,
+                         'last_modified': datetime.datetime.now()}
+                    )
+        # print(project_id.inserted_id)
+
+        mongo.db.users.update_one(
+            {'_id': flask_login.current_user.id},
+            {'$set': {
+                f'permissions.{project_id.inserted_id}': {
+                    'role': 'admin',
+                    'classifications': {}
+                }
+            }}
+        )
+
+        return 'success'
+
+    except Exception as _e:
+        print(_e)
+        return str(_e)
+
+
 if __name__ == '__main__':
     app.run(host=config['server']['host'], port=config['server']['port'], threaded=True)
