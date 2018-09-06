@@ -478,8 +478,39 @@ def root():
                                          user=user_id,
                                          logo=config['server']['logo'],
                                          projects=None)
-        # get projects for the user
-        pass
+        else:
+            # TODO: get projects for the user
+            pass
+            # TODO: superusers can see and do everything
+            # otherwise, there are two roles: admin and user
+            projects = {'id1': {'name': 'project1',
+                                'description': 'Lorem ipsum dolor sit amet',
+                                'datasets': {'dataset1': {
+                                                 'description': 'Omnia mea mecum porto',
+                                                 'data': ['file1.jpg', 'file2.jpg', 'file3.jpg', 'file4.jpg']},
+                                             'dataset2': {
+                                                 'description': 'Sic transit glori mundi',
+                                                 'data': ['file1.jpg']}
+                                             },
+                                'classes': ['class1', 'class2', 'class3'],
+                                'users': ['user1', 'user2', 'user3'],
+                                'role': 'admin'
+                                },
+                        'id2': {'name': 'project2',
+                                'description': 'Lorem ipsum dolor sit amet',
+                                'datasets': {'dataset1': {
+                                    'description': None,
+                                    'data': ['file1.jpg', 'file2.jpg']}
+                                },
+                                'classes': ['class1', 'class2'],
+                                'role': 'user'
+                                }
+                        }
+
+            return flask.render_template('template-root.html',
+                                         logo=config['server']['logo'],
+                                         user=user_id,
+                                         projects=projects)
 
     classes = {
         0: "Plausible Asteroid (short streak)",

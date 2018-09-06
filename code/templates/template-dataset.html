@@ -1,0 +1,35 @@
+{% extends "template.html" %}
+
+{% block body %}
+    <div class="container">
+        <form id="cutouts_form" class="form" method="post">
+            {% for cutout in cutouts %}
+            <div class="form-group row">
+                <div class="col-12">
+                    <b>{{cutout}}</b>
+                </div>
+                <div class="col-6">
+                    <img src="/data/zooniverse/{{cutout}}">
+                </div>
+                <div class="col-6">
+                    {% for class in classes %}
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" data-id="{{-cutout-}}"
+                                 value="{{-class-}}"{% if class in cutouts[cutout] %} checked="checked"{% endif %}>
+                          <label class="form-check-label" for="{{-cutout-}}_{{-class-}}">
+                              {{ class }}: {{ cutouts[cutout].count(class) }}
+                          </label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <hr>
+            {% endfor %}
+
+            <div class="form-group row">
+                <button type="button" class="btn btn-dark btn-sm" id="save">Save to JSON</button>
+            </div>
+        </form>
+
+    </div>
+{% endblock %}
