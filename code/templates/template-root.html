@@ -43,8 +43,8 @@
                                     data-toggle="modal" data-target="#editProjectModal"
                                     data-user="{{ u }}">
                                 edit</button>
-                            <button type="button" class="btn btn-sm btn-outline-danger"
-                                    data-user="{{ u }}">
+                            <button type="button" class="btn btn-sm btn-outline-danger removeProjectButton"
+                                    data-projectid="{{-project-}}">
                                 remove</button>
                         {% endif %}
                     </h3>
@@ -166,6 +166,8 @@
                                                     </div>
                                                 </div>
                                             {% endif %}
+                                            <button type="button" class="btn btn-sm btn-primary addDatasetButton"
+                                                data-projectid="{{-project-}}"><i class="fas fa-plus"></i> Add dataset</button>
                                         </div>
                                     {% endfor %}
                                 </div>
@@ -228,7 +230,7 @@
 
 {% block js %}
     <script>
-        // send AJAX PUT request to server
+        // add project
         $('#addProjectButton').click(function (e) {
             $.ajax({url: '{{-script_root-}}/projects',
                 method: 'PUT',
@@ -247,6 +249,35 @@
                 error: function(data) {
                     $('#addUserModal').modal('hide');
                     showFlashingMessage('Info:', data, 'danger');
+                }
+            });
+            return false;
+        });
+
+        // remove project
+        $('.removeButton').click(function (e) {
+            // Extract info from data-* attributes
+            var user = $(this).data('user');
+            bootbox.confirm("Are you sure?", function(result) {
+                if (result) {
+                    $.ajax({url: '{{-script_root-}}/users',
+                        data: JSON.stringify({'user': user}),
+                        method: 'DELETE',
+                        processData: false,
+                        contentType: 'application/json',
+                        success: function(data) {
+                            if (data === 'success') {
+                                location.reload(true);
+                            }
+                            else {
+                                {#showFlashingMessage('Info:', 'Failed to remove user', 'danger');#}
+                                showFlashingMessage('Info:', data, 'danger');
+                            }
+                        },
+                        error: function(data) {
+                            showFlashingMessage('Info:', 'Failed to remove user', 'danger');
+                        }
+                    });
                 }
             });
             return false;
