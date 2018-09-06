@@ -471,6 +471,16 @@ def root():
     else:
         user_id = str(flask_login.current_user.id)
 
+    if flask.request.method == 'GET':
+        # do not display anything for the anonymous
+        if user_id is None:
+            return flask.render_template('template-root.html',
+                                         user=user_id,
+                                         logo=config['server']['logo'],
+                                         projects=None)
+        # get projects for the user
+        pass
+
     classes = {
         0: "Plausible Asteroid (short streak)",
         1: "Satellite (long streak - could be partially masked)",
