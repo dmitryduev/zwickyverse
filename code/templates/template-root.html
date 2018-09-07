@@ -33,104 +33,110 @@
                 data-toggle="modal" data-target="#addProjectModal"
                 data-user="{{ u }}"><i class="fas fa-plus"></i> New project</button>
         {% for project in projects %}
+            {% set project_id = project['_id'] | string %}
             <div class="row mt-2">
                 <div class="col-md-12 mt-2">
                     <h3>
-                        {{ projects[project]['name'] }}
-                        {% if projects[project]['role'] == 'admin' %}
+                        {{ project['name'] }}
+                        {% if project['role'] == 'admin' %}
                             <button type="button" class="btn btn-sm btn-outline-primary"
                                     data-toggle="modal" data-target="#editProjectModal"
                                     data-user="{{ u }}">
                                 edit</button>
                             <button type="button" class="btn btn-sm btn-outline-danger removeProjectButton"
-                                    data-projectid="{{-project-}}">
+                                    data-projectid="{{-project_id-}}">
                                 remove</button>
                         {% endif %}
                     </h3>
                     <p>
-                        {{ projects[project]['description'] }}
+                        {{ project['description'] }}
                     </p>
 
-                    <div class="accordion mb-2" id="accordion_{{-project-}}">
+                    <div class="accordion mb-2" id="accordion_{{-project_id-}}">
 
                         <div class="card">
-                            <div class="card-header p-0" id="accordion_{{-project-}}_headingOne">
+                            <div class="card-header p-0" id="accordion_{{-project_id-}}_headingOne">
                                 <h5 class="mb-0">
                                     <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                                            data-target="#accordion_{{-project-}}_collapseOne" aria-expanded="false"
-                                            aria-controls="accordion_{{-project-}}_collapseOne">
+                                            data-target="#accordion_{{-project_id-}}_collapseOne" aria-expanded="false"
+                                            aria-controls="accordion_{{-project_id-}}_collapseOne">
                                         Classes
                                     </button>
                                 </h5>
                             </div>
 
-                            <div id="accordion_{{-project-}}_collapseOne" class="collapse"
-                                 aria-labelledby="accordion_{{-project-}}_headingOne"
-                                 data-parent="#accordion_{{-project-}}">
+                            <div id="accordion_{{-project_id-}}_collapseOne" class="collapse"
+                                 aria-labelledby="accordion_{{-project_id-}}_headingOne"
+                                 data-parent="#accordion_{{-project_id-}}">
                                 <div class="card-body" style="max-height: 400px; overflow-x: hidden; overflow-y: scroll">
-                                    {% for class in projects[project]['classes'] %}
+                                    {% for class in project['classes'] %}
                                         <span>{{ class }} <a href="#"><i class="fas fa-times"></i></a></span><br>
                                     {% endfor %}
-                                    {% if projects[project]['classes'] | length > 0 %}
+                                    {% if project['classes'] | length > 0 %}
                                         <br>
                                     {% endif %}
-                                    <a href="#" class="btn btn-sm btn-primary"
-                                            data-toggle="modal" data-target="#editUserModal"><i class="fas fa-plus"></i> Add data classes</a>
+                                    <a href="#" class="btn btn-sm btn-primary" data-projectid="{{-project_id-}}"
+                                            data-toggle="modal" data-target="#addDataClassesModal"><i class="fas fa-plus"></i> Add data classes</a>
                                 </div>
                             </div>
                         </div>
 
-                        {% if projects[project]['role'] == 'admin' %}
+                        {% if project['role'] == 'admin' %}
                             <div class="card">
-                                <div class="card-header p-0" id="accordion_{{-project-}}_headingTwo">
+                                <div class="card-header p-0" id="accordion_{{-project_id-}}_headingTwo">
                                     <h5 class="mb-0">
                                         <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                                                data-target="#accordion_{{-project-}}_collapseTwo" aria-expanded="false"
-                                                aria-controls="accordion_{{-project-}}_collapseTwo">
+                                                data-target="#accordion_{{-project_id-}}_collapseTwo" aria-expanded="false"
+                                                aria-controls="accordion_{{-project_id-}}_collapseTwo">
                                             Users
                                         </button>
                                     </h5>
                                 </div>
-                                <div id="accordion_{{-project-}}_collapseTwo" class="collapse"
-                                     aria-labelledby="accordion_{{-project-}}_headingTwo"
-                                     data-parent="#accordion_{{-project-}}">
+                                <div id="accordion_{{-project_id-}}_collapseTwo" class="collapse"
+                                     aria-labelledby="accordion_{{-project_id-}}_headingTwo"
+                                     data-parent="#accordion_{{-project_id-}}">
                                     <div class="card-body" style="max-height: 200px; overflow-x: hidden; overflow-y: scroll">
-                                        {% for user in projects[project]['users'] %}
-                                            <span>{{ user }} <a href="#"><i class="fas fa-times"></i></a></span><br>
+                                        {% for user in project['users'] %}
+                                            <span>
+                                                <b>{{ user }}</b>: {{ project['users'][user]['role'] }}
+                                                {# TODO: #}
+                                                <a href="#"><i class="fas fa-pen"></i></a>
+                                                <a href="#"><i class="fas fa-times"></i></a>
+                                            </span><br>
                                         {% endfor %}
-                                        {% if projects[project]['users'] | length > 0 %}
+                                        {% if project['users'] | length > 0 %}
                                             <br>
                                         {% endif %}
-                                        <a href="#" class="btn btn-sm btn-primary"
-                                                data-toggle="modal" data-target="#editUserModal"><i class="fas fa-plus"></i> Add user</a>
+                                        <a href="#" class="btn btn-sm btn-primary" data-projectid="{{-project_id-}}"
+                                                data-toggle="modal" data-target="#addUserModal"><i class="fas fa-plus"></i> Add user</a>
                                     </div>
                                 </div>
                             </div>
                         {% endif %}
 
                         <div class="card">
-                            <div class="card-header p-0" id="accordion_{{-project-}}_heading3">
+                            <div class="card-header p-0" id="accordion_{{-project_id-}}_heading3">
                                 <h5 class="mb-0">
                                     <button class="btn btn-link" type="button" data-toggle="collapse"
-                                            data-target="#accordion_{{-project-}}_collapse3" aria-expanded="true"
-                                            aria-controls="accordion_{{-project-}}_collapse3">
+                                            data-target="#accordion_{{-project_id-}}_collapse3" aria-expanded="true"
+                                            aria-controls="accordion_{{-project_id-}}_collapse3">
                                         Datasets
                                     </button>
                                 </h5>
                             </div>
 
-                            <div id="accordion_{{-project-}}_collapse3" class="collapse show"
-                                 aria-labelledby="accordion_{{-project-}}_heading3"
-                                 data-parent="#accordion_{{-project-}}">
+                            <div id="accordion_{{-project_id-}}_collapse3" class="collapse show"
+                                 aria-labelledby="accordion_{{-project_id-}}_heading3"
+                                 data-parent="#accordion_{{-project_id-}}">
                                 <div class="card-body">
-                                    {% for dataset in projects[project]['datasets'] %}
+                                    {% for dataset in project['datasets'] %}
                                         <div class="col-md-12">
                                             <h4>
                                                 {{ dataset }}
                                                 <button type="button" class="btn btn-sm btn-outline-dark"
                                                         data-toggle="modal" data-target="#editUserModal"
                                                         data-user="{{ u }}">classify</button>
-                                                {% if projects[project]['role'] == 'admin' %}
+                                                {% if project['role'] == 'admin' %}
                                                     <button type="button" class="btn btn-sm btn-outline-dark"
                                                             data-toggle="modal" data-target="#editUserModal"
                                                             data-user="{{ u }}">inspect</button>
@@ -141,24 +147,24 @@
                                                             data-user="{{ u }}">remove</button>
                                                 {% endif %}
                                             </h4>
-                                            {% if projects[project]['datasets'][dataset]['description'] != None %}
+                                            {% if project['datasets'][dataset]['description'] != None %}
                                                 <p>
-                                                    {{ projects[project]['datasets'][dataset]['description'] }}
+                                                    {{ project['datasets'][dataset]['description'] }}
                                                 </p>
                                             {% endif %}
-                                            {% if projects[project]['datasets'][dataset]['data'] | length > 0 %}
+                                            {% if project['datasets'][dataset]['data'] | length > 0 %}
                                                 <p>
                                                     <a class="btn btn-sm btn-outline-dark" data-toggle="collapse"
-                                                       href="#{{-project-}}_{{-dataset-}}_files" role="button"
-                                                       aria-expanded="false" aria-controls="{{-project-}}_{{-dataset-}}_files">
+                                                       href="#{{-project_id-}}_{{-dataset-}}_files" role="button"
+                                                       aria-expanded="false" aria-controls="{{-project_id-}}_{{-dataset-}}_files">
                                                         Files <i class="fas fa-caret-down"></i>
                                                     </a>
                                                 </p>
-                                                <div class="collapse" id="{{-project-}}_{{-dataset-}}_files">
+                                                <div class="collapse" id="{{-project_id-}}_{{-dataset-}}_files">
                                                     <div class="card">
                                                         <div class="card-body p-1 pl-3" style="max-height: 200px; overflow-x: hidden;
                                                                                                     overflow-y: scroll">
-                                                            {% for file in projects[project]['datasets'][dataset]['data'] %}
+                                                            {% for file in project['datasets'][dataset]['data'] %}
                                                                 <span>{{ file }}{#<a href="#"><i class="fas fa-times"></i></a>#}</span><br>
                                                             {% endfor %}
                                                         </div>
@@ -167,8 +173,8 @@
                                             {% endif %}
                                         </div>
                                     {% endfor %}
-                                    <button type="button" class="btn btn-sm btn-primary addDatasetButton"
-                                            data-projectid="{{-project-}}"><i class="fas fa-plus"></i> Add dataset</button>
+                                    <button type="button" class="btn btn-sm btn-primary" data-projectid="{{-project_id-}}"
+                                            data-toggle="modal" data-target="#addDatasetModal"><i class="fas fa-plus"></i> Add dataset</button>
                                 </div>
                             </div>
                         </div>
@@ -186,7 +192,7 @@
     {% endif %}
 
 
-    <!-- Project Modal -->
+    <!-- Add Project Modal -->
     <div class="modal fade" tabindex="-1" role="dialog" id="addProjectModal">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -224,11 +230,93 @@
     </div><!-- /.modal -->
     <!-- End Modal -->
 
+    <!-- Add Data Classes Modal -->
+    <div class="modal fade" tabindex="-1" role="dialog" id="addDataClassesModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add data class(es) to project</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addDataClasses">
+                        <div class="form-group">
+                            <input id="form-projectid" type="hidden" class="form-control"
+                                   name="project_id" autocomplete="off">
+
+                            <label for="form-classes">Classes</label>
+                            <input id="form-classes" type="text" class="form-control" placeholder="class1 class2 ..."
+                                   name="classes" autocomplete="off">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="addDataClassButton">Save</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    <!-- End Modal -->
+
+    <!-- Add User Modal -->
+    <div class="modal fade" tabindex="-1" role="dialog" id="addUserModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add user to project</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUser">
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <input id="form-projectid" type="hidden" class="form-control"
+                                       name="project_id" autocomplete="off">
+
+                                <label for="form-user">User</label>
+                                <input id="form-user" type="text" class="form-control"
+                                       name="add_user" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="form-user-role">Role</label>
+                                <select id="form-user-role" class="form-control" name="add_user_role">
+                                    <option selected>user</option>
+                                    <option>admin</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="addUserButton">Save</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    <!-- End Modal -->
+
 
 {% endblock %}
 
 {% block js %}
     <script>
+        // add project id to modals:
+        // Build modal on-the-fly
+        $('#addDataClassesModal, #addUserModal').on('show.bs.modal', function (event) {
+            var trigger = $(event.relatedTarget); // Who triggered the modal? [to extract info]
+            // Extract info from data-* attributes
+            var projectid = trigger.data('projectid');
+
+            var modal = $(this);
+            modal.find("#form-projectid").val(projectid);
+        });
+
         // add project
         $('#addProjectButton').click(function (e) {
             $.ajax({url: '{{-script_root-}}/projects',
@@ -276,6 +364,56 @@
                             showFlashingMessage('Info:', data, 'danger');
                         }
                     });
+                }
+            });
+            return false;
+        });
+
+        // add classes to project
+        $('#addDataClassButton').click(function (e) {
+            {#var projectid = $(this).data('projectid');#}
+            {#var data = Object.assign({}, {'project_id': projectid}, $('#addDataClasses').serializeJSON());#}
+            $.ajax({url: '{{-script_root-}}/projects',
+                method: 'POST',
+                data: JSON.stringify($('#addDataClasses').serializeJSON()),
+                processData: false,
+                contentType: 'application/json',
+                success: function(data) {
+                    if (data === 'success') {
+                        location.reload(true);
+                    }
+                    else {
+                        $('#addDataClassesModal').modal('hide');
+                        showFlashingMessage('Info:', data, 'danger');
+                    }
+                },
+                error: function(data) {
+                    $('#addDataClassesModal').modal('hide');
+                    showFlashingMessage('Info:', data, 'danger');
+                }
+            });
+            return false;
+        });
+
+        // add user to project
+        $('#addUserButton').click(function (e) {
+            $.ajax({url: '{{-script_root-}}/projects',
+                method: 'POST',
+                data: JSON.stringify($('#addUser').serializeJSON()),
+                processData: false,
+                contentType: 'application/json',
+                success: function(data) {
+                    if (data === 'success') {
+                        location.reload(true);
+                    }
+                    else {
+                        $('#addUserModal').modal('hide');
+                        showFlashingMessage('Info:', data, 'danger');
+                    }
+                },
+                error: function(data) {
+                    $('#addUserModal').modal('hide');
+                    showFlashingMessage('Info:', data, 'danger');
                 }
             });
             return false;
