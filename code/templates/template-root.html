@@ -347,7 +347,7 @@
             var projectid = $(this).data('projectid');
             bootbox.confirm("Are you sure?", function(result) {
                 if (result) {
-                    $.ajax({url: '{{-script_root-}}/projects',
+                    $.ajax({url: '{{-script_root-}}/projects/' + projectid,
                         data: JSON.stringify({'project_id': projectid}),
                         method: 'DELETE',
                         processData: false,
@@ -371,9 +371,10 @@
 
         // add classes to project
         $('#addDataClassButton').click(function (e) {
-            {#var projectid = $(this).data('projectid');#}
+            var projectid = $('#addDataClasses').serializeJSON()['project_id'];
+            {#console.log(projectid);#}
             {#var data = Object.assign({}, {'project_id': projectid}, $('#addDataClasses').serializeJSON());#}
-            $.ajax({url: '{{-script_root-}}/projects',
+            $.ajax({url: '{{-script_root-}}/projects/' + projectid,
                 method: 'POST',
                 data: JSON.stringify($('#addDataClasses').serializeJSON()),
                 processData: false,
