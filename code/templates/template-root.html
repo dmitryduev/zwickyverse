@@ -16,8 +16,7 @@
                          alt="Zwicky Transient Facility">
                     <div class="media-body">
                         <h2 class="mt-0">Zwickyverse</h2>
-                        <p style="font-size: 1.2rem;">Zooniverse with an artificial human face:<br>
-                            Simplifying data-set labeling for machine learning activities</p>
+                        <p style="font-size: 1.2rem;">Simplifying data-set labeling for ZTF machine learning activities</p>
                     </div>
                 </div>
             </div>
@@ -52,22 +51,22 @@
                         {{ projects[project]['description'] }}
                     </p>
 
-                    <div class="accordion mb-2" id="{{-project-}}_accordion">
+                    <div class="accordion mb-2" id="accordion_{{-project-}}">
 
                         <div class="card">
-                            <div class="card-header p-0" id="{{-project-}}_accordion_headingOne">
+                            <div class="card-header p-0" id="accordion_{{-project-}}_headingOne">
                                 <h5 class="mb-0">
                                     <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                                            data-target="#{{-project-}}_accordion_collapseOne" aria-expanded="false"
-                                            aria-controls="{{-project-}}_accordion_collapseOne">
+                                            data-target="#accordion_{{-project-}}_collapseOne" aria-expanded="false"
+                                            aria-controls="accordion_{{-project-}}_collapseOne">
                                         Classes
                                     </button>
                                 </h5>
                             </div>
 
-                            <div id="{{-project-}}_accordion_collapseOne" class="collapse"
-                                 aria-labelledby="{{-project-}}_accordion_headingOne"
-                                 data-parent="#{{-project-}}_accordion">
+                            <div id="accordion_{{-project-}}_collapseOne" class="collapse"
+                                 aria-labelledby="accordion_{{-project-}}_headingOne"
+                                 data-parent="#accordion_{{-project-}}">
                                 <div class="card-body" style="max-height: 400px; overflow-x: hidden; overflow-y: scroll">
                                     {% for class in projects[project]['classes'] %}
                                         <span>{{ class }} <a href="#"><i class="fas fa-times"></i></a></span><br>
@@ -83,18 +82,18 @@
 
                         {% if projects[project]['role'] == 'admin' %}
                             <div class="card">
-                                <div class="card-header p-0" id="{{-project-}}_accordion_headingTwo">
+                                <div class="card-header p-0" id="accordion_{{-project-}}_headingTwo">
                                     <h5 class="mb-0">
                                         <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                                                data-target="#{{-project-}}_accordion_collapseTwo" aria-expanded="false"
-                                                aria-controls="{{-project-}}_accordion_collapseTwo">
+                                                data-target="#accordion_{{-project-}}_collapseTwo" aria-expanded="false"
+                                                aria-controls="accordion_{{-project-}}_collapseTwo">
                                             Users
                                         </button>
                                     </h5>
                                 </div>
-                                <div id="{{-project-}}_accordion_collapseTwo" class="collapse"
-                                     aria-labelledby="{{-project-}}_accordion_headingTwo"
-                                     data-parent="#{{-project-}}_accordion">
+                                <div id="accordion_{{-project-}}_collapseTwo" class="collapse"
+                                     aria-labelledby="accordion_{{-project-}}_headingTwo"
+                                     data-parent="#accordion_{{-project-}}">
                                     <div class="card-body" style="max-height: 200px; overflow-x: hidden; overflow-y: scroll">
                                         {% for user in projects[project]['users'] %}
                                             <span>{{ user }} <a href="#"><i class="fas fa-times"></i></a></span><br>
@@ -110,19 +109,19 @@
                         {% endif %}
 
                         <div class="card">
-                            <div class="card-header p-0" id="{{-project-}}_accordion_heading3">
+                            <div class="card-header p-0" id="accordion_{{-project-}}_heading3">
                                 <h5 class="mb-0">
                                     <button class="btn btn-link" type="button" data-toggle="collapse"
-                                            data-target="#{{-project-}}_accordion_collapse3" aria-expanded="true"
-                                            aria-controls="{{-project-}}_accordion_collapse3">
+                                            data-target="#accordion_{{-project-}}_collapse3" aria-expanded="true"
+                                            aria-controls="accordion_{{-project-}}_collapse3">
                                         Datasets
                                     </button>
                                 </h5>
                             </div>
 
-                            <div id="{{-project-}}_accordion_collapse3" class="collapse show"
-                                 aria-labelledby="{{-project-}}_accordion_heading3"
-                                 data-parent="#{{-project-}}_accordion">
+                            <div id="accordion_{{-project-}}_collapse3" class="collapse show"
+                                 aria-labelledby="accordion_{{-project-}}_heading3"
+                                 data-parent="#accordion_{{-project-}}">
                                 <div class="card-body">
                                     {% for dataset in projects[project]['datasets'] %}
                                         <div class="col-md-12">
@@ -211,7 +210,7 @@
                         </div>
                         <div class="form-group">
                             <label for="form-classes">Classes</label>
-                            <input id="form-classes" type="text" class="form-control" placeholder="'class1' 'class2'"
+                            <input id="form-classes" type="text" class="form-control" placeholder="class1 class2 ..."
                                    name="classes" autocomplete="off">
                         </div>
                     </form>
