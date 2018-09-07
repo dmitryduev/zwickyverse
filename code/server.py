@@ -483,7 +483,7 @@ def root():
             pass
             # TODO: superusers can see and do everything
             # otherwise, there are two roles: admin and user
-            projects = {'id1': {'name': 'project1',
+            projects = {'5b91b49d2a0221000d410799': {'name': 'project1',
                                 'description': 'Lorem ipsum dolor sit amet',
                                 'datasets': {'dataset1': {
                                                  'description': 'Omnia mea mecum porto',
@@ -594,6 +594,51 @@ def add_project():
 
         return 'success'
 
+    except Exception as _e:
+        print(_e)
+        return str(_e)
+
+
+@app.route('/projects', methods=['DELETE'])
+@flask_login.login_required
+def remove_project():
+    """
+        Remove project from DB
+    :return:
+    """
+    user_id = flask_login.current_user.id
+    try:
+        # get project_id from request
+        project_id = flask.request.json.get('project_id', None)
+        if project_id is not None:
+            _tmp = mongo.db.projects.find_one({'_id': project_id})
+
+            if _tmp is not None and len(_tmp) > 0:
+                # check user is admin for the project:
+                permissions = mongo.db.users.find_one({'_id': user_id}, {'_id':0, 'permissions': 1})
+                if project_id in permissions:
+                    if permissions[project_id]['role'] == 'admin':
+                        # try to remove the project:
+                        mongo.db.users.delete_one({'_id': project_id})
+
+                        mongo.db.users.update(
+                            {f'permissions.{project_id.inserted_id}': {'$exist': True}},
+                            {'$unset': {
+                                f'permissions.{project_id.inserted_id}': ''
+                            }},
+                            multi=True
+                        )
+
+                        return 'success'
+                    else:
+                        flask.abort(403)
+                        # return f'user {user_id} is not admin for project_id {project_id}'
+                else:
+                    flask.abort(403)
+                    # return f'user {user_id} not on project_id {project_id}'
+
+            else:
+                return f'project_id {project_id} not found'
     except Exception as _e:
         print(_e)
         return str(_e)

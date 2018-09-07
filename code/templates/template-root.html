@@ -166,10 +166,10 @@
                                                     </div>
                                                 </div>
                                             {% endif %}
-                                            <button type="button" class="btn btn-sm btn-primary addDatasetButton"
-                                                data-projectid="{{-project-}}"><i class="fas fa-plus"></i> Add dataset</button>
                                         </div>
                                     {% endfor %}
+                                    <button type="button" class="btn btn-sm btn-primary addDatasetButton"
+                                            data-projectid="{{-project-}}"><i class="fas fa-plus"></i> Add dataset</button>
                                 </div>
                             </div>
                         </div>
@@ -255,13 +255,13 @@
         });
 
         // remove project
-        $('.removeButton').click(function (e) {
+        $('.removeProjectButton').click(function (e) {
             // Extract info from data-* attributes
-            var user = $(this).data('user');
+            var projectid = $(this).data('projectid');
             bootbox.confirm("Are you sure?", function(result) {
                 if (result) {
-                    $.ajax({url: '{{-script_root-}}/users',
-                        data: JSON.stringify({'user': user}),
+                    $.ajax({url: '{{-script_root-}}/projects',
+                        data: JSON.stringify({'project_id': projectid}),
                         method: 'DELETE',
                         processData: false,
                         contentType: 'application/json',
@@ -270,12 +270,11 @@
                                 location.reload(true);
                             }
                             else {
-                                {#showFlashingMessage('Info:', 'Failed to remove user', 'danger');#}
                                 showFlashingMessage('Info:', data, 'danger');
                             }
                         },
                         error: function(data) {
-                            showFlashingMessage('Info:', 'Failed to remove user', 'danger');
+                            showFlashingMessage('Info:', data, 'danger');
                         }
                     });
                 }
