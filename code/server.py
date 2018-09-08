@@ -496,10 +496,10 @@ def root():
                                          logo=config['server']['logo'],
                                          projects=None)
         else:
-            # TODO: get projects for the user
+            ''' get projects for the user '''
             user_projects = mongo.db.users.find_one({'_id': user_id}, {'_id': 0, 'permissions': 1})['permissions']
             # fetch additional info
-            print(user_projects)
+            # print(user_projects)
             projects = list(mongo.db.projects.find({'_id': {'$in': list(map(ObjectId, user_projects.keys()))}}))
             # print(projects)
             # append info in place:
@@ -520,7 +520,7 @@ def root():
                     project['datasets'][dataset]['num_files'] = len(next(os.walk(path_dataset))[2]) \
                                                                 if os.path.exists(path_dataset) else 0
 
-            print(projects)
+            # print(projects)
 
             # TODO: superusers can see and do everything
             # otherwise, there are two roles: admin and user

@@ -80,8 +80,10 @@
                                     {% if project['classes'] | length > 0 %}
                                         <br>
                                     {% endif %}
+                                    {% if project['role'] == 'admin' %}
                                     <a href="#" class="btn btn-sm btn-primary" data-projectid="{{-project_id-}}"
                                             data-toggle="modal" data-target="#addDataClassesModal"><i class="fas fa-plus"></i> Add data classes</a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -183,8 +185,10 @@
                                             {% endif %}
                                         </div>
                                     {% endfor %}
+                                    {% if project['role'] == 'admin' %}
                                     <button type="button" class="btn btn-sm btn-primary" data-projectid="{{-project_id-}}"
                                             data-toggle="modal" data-target="#addDatasetModal"><i class="fas fa-plus"></i> Add dataset</button>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
