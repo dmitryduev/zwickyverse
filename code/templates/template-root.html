@@ -137,7 +137,7 @@
                                     {% for dataset in project['datasets'] %}
                                         <div class="col-md-12">
                                             <h4>
-                                                {{ dataset }}
+                                                {{ project['datasets'][dataset]['name'] }}
                                                 <button type="button" class="btn btn-sm btn-outline-dark"
                                                         data-toggle="modal" data-target="#editUserModal"
                                                         data-user="{{ u }}">classify</button>
@@ -148,8 +148,10 @@
                                                     <button type="button" class="btn btn-sm btn-outline-primary"
                                                             data-toggle="modal" data-target="#editUserModal"
                                                             data-user="{{ u }}">edit</button>
-                                                    <button type="button" class="btn btn-sm btn-outline-danger"
-                                                            data-user="{{ u }}">remove</button>
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-danger removeDatasetButton"
+                                                            data-datasetid="{{-dataset-}}"
+                                                            data-projectid="{{-project_id-}}">remove</button>
                                                 {% endif %}
                                             </h4>
                                             {% if project['datasets'][dataset]['description'] != None %}
@@ -157,6 +159,9 @@
                                                     {{ project['datasets'][dataset]['description'] }}
                                                 </p>
                                             {% endif %}
+                                            <p>
+                                                Number of files: {{ project['datasets'][dataset]['num_files'] }}
+                                            </p>
                                             {% if project['datasets'][dataset]['data'] | length > 0 %}
                                                 <p>
                                                     <a class="btn btn-sm btn-outline-dark" data-toggle="collapse"
@@ -353,8 +358,116 @@
 {% endblock %}
 
 {% block js %}
-    {{ dropzone.load_js() }}
-    {{ dropzone.config() }}
+{#    {{ dropzone.load_js() }}#}
+{#    {{ dropzone.config() }}#}
+
+    {# Dropzone #}
+    <script src="https://cdn.jsdelivr.net/npm/dropzone@5.2.0/dist/dropzone.min.js"></script>
+
+    <script>
+        // Create dataset and upload files
+        var dataset_id = '';
+        Dropzone.options.myDropzone = {
+            init: function () {
+                var myDropzone = this;
+
+                // Update selector to match your button
+                $("#addDatasetButton").click(function (e) {
+                    e.preventDefault();
+
+                    // PUT request to create dataset, then POST files:
+                    var projectid = $('#addDataset').serializeJSON()['project_id'];
+                    $.ajax({url: '{{-script_root-}}/projects/' + projectid + '/datasets',
+                        method: 'PUT',
+                        data: JSON.stringify($('#addDataset').serializeJSON()),
+                        processData: false,
+                        contentType: 'application/json',
+                        success: function(data) {
+                            if (data['status'] === 'success') {
+                                dataset_id = data['dataset_id'];
+                                myDropzone.processQueue();
+                            }
+                            else {
+                                $('#addUserModal').modal('hide');
+                                showFlashingMessage('Info:', data, 'danger');
+                            }
+                        },
+                        error: function(data) {
+                            $('#addUserModal').modal('hide');
+                            showFlashingMessage('Info:', data, 'danger');
+                        }
+                    });
+
+                });
+
+                this.on('sending', function(file, xhr, formData) {
+                    // Append dataset_id to the formData Dropzone will POST
+                    {#alert(dataset_id);#}
+                    formData.append('dataset_id', dataset_id);
+                });
+
+                // dynamically build url:
+                this.on("processing", function(file) {
+                    var project_id = $('#addDataset').serializeJSON()['project_id'];
+                    this.options.url = "/projects/" + project_id + '/datasets/' + dataset_id;
+                });
+
+                // reload page on success
+                this.on('successmultiple', function(files, xhr, formData) {
+                    location.reload(true);
+                })
+
+            },
+
+            url: "/projects/PROJECTID/datasets/DATASETID",
+            autoProcessQueue: false,
+            // addRemoveLinks: true,
+            // click upload options
+            uploadMultiple: true,
+            parallelUploads: 5000,
+            paramName: "file", // The name that will be used to transfer the file
+            maxFilesize: 3, // MB
+            acceptedFiles: "image/*",
+            maxFiles: 5000,
+            dictDefaultMessage: `Drop files here or click to upload (up to 5,000 files).`, // message display on drop area
+            dictFallbackMessage: "Your browser does not support drag'n'drop file uploads.",
+            dictInvalidFileType: "You can't upload files of this type.",
+            dictFileTooBig: "File is too big {{filesize}}. Max filesize: {{maxFilesize}}MiB.",
+            dictResponseError: "Server error: {{statusCode}}",
+            dictMaxFilesExceeded: "Your can't upload any more files.",
+            // timeout
+            // custom options code
+        };
+
+        // remove dataset
+        $('.removeDatasetButton').click(function (e) {
+            // Extract info from data-* attributes
+            var projectid = $(this).data('projectid');
+            var datasetid = $(this).data('datasetid');
+            bootbox.confirm("Are you sure?", function(result) {
+                if (result) {
+                    $.ajax({url: '{{-script_root-}}/projects/' + projectid + '/datasets/' + datasetid,
+                        data: JSON.stringify({'project_id': projectid, 'dataset_id': datasetid}),
+                        method: 'DELETE',
+                        processData: false,
+                        contentType: 'application/json',
+                        success: function(data) {
+                            if (data === 'success') {
+                                location.reload(true);
+                            }
+                            else {
+                                showFlashingMessage('Info:', data, 'danger');
+                            }
+                        },
+                        error: function(data) {
+                            showFlashingMessage('Info:', data, 'danger');
+                        }
+                    });
+                }
+            });
+            return false;
+        });
+    </script>
 
     <script>
         // add project id to modals:
@@ -449,7 +562,8 @@
 
         // add user to project
         $('#addUserButton').click(function (e) {
-            $.ajax({url: '{{-script_root-}}/projects',
+            var projectid = $('#addUser').serializeJSON()['project_id'];
+            $.ajax({url: '{{-script_root-}}/projects/' + projectid,
                 method: 'POST',
                 data: JSON.stringify($('#addUser').serializeJSON()),
                 processData: false,
