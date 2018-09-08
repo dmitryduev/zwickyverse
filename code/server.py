@@ -6,6 +6,7 @@ import pymongo
 import flask
 import flask_login
 import flask_pymongo
+from flask_dropzone import Dropzone
 from flask_jwt_extended import JWTManager, jwt_required, jwt_optional, create_access_token, get_jwt_identity
 import os
 import json
@@ -114,6 +115,20 @@ app.jinja_env.add_extension('jinja2.ext.do')
 
 # add json prettyfier
 app.jinja_env.filters['tojson_pretty'] = to_pretty_json
+
+app.config.update(
+    UPLOADED_PATH=config['path']['path_data'],
+    # Flask-Dropzone config:
+    DROPZONE_ALLOWED_FILE_TYPE='image',
+    DROPZONE_MAX_FILE_SIZE=5,
+    DROPZONE_MAX_FILES=5000,
+    DROPZONE_IN_FORM=True,
+    DROPZONE_UPLOAD_ON_CLICK=True,
+    # DROPZONE_UPLOAD_ACTION='handle_upload',  # URL or endpoint
+    # DROPZONE_UPLOAD_BTN_ID='submit',
+)
+
+dropzone = Dropzone(app)
 
 # set up secret keys:
 app.secret_key = config['server']['SECRET_KEY']
@@ -746,6 +761,181 @@ def projects(project_id=None):
 
             else:
                 return 'project_id not defined'
+
+    except Exception as _e:
+        # FIXME: this is for debugging
+        print(_e)
+        return str(_e)
+
+
+''' Datasets API '''
+
+
+@app.route('/projects/<string:project_id>/datasets', strict_slashes=False, methods=['GET', 'PUT'])
+@app.route('/projects/<string:project_id>/datasets/<string:dataset_id>', methods=['GET', 'POST', 'DELETE'])
+@flask_login.login_required
+def datasets(project_id, dataset_id=None):
+
+    try:
+        user_id = flask_login.current_user.id
+
+        ''' web endpoint '''
+        if flask.request.method == 'GET':
+            # FIXME: TODO:
+            if project_id is None:
+                # display all projects for user
+                return flask.redirect(flask.url_for('root'))
+            else:
+                # display single project
+                return flask.redirect(flask.url_for('root'))
+
+        ''' Add project '''
+        if flask.request.method == 'PUT':
+
+            # # print(flask.request.json)
+            # name = flask.request.json.get('name', None)
+            # description = flask.request.json.get('description', '')
+            # classes = flask.request.json.get('classes', '')
+            #
+            # if len(name) == 0 or len(classes) == 0:
+            #     return 'name and classes must be set'
+            #
+            # classes = sorted(list(set(classes.split())))
+            #
+            # # add to db:
+            # project_id = mongo.db.projects.insert_one(
+            #     {'name': name,
+            #      'description': description,
+            #      'classes': classes,
+            #      'datasets': {},
+            #      'last_modified': datetime.datetime.now()}
+            # )
+            # # print(project_id.inserted_id)
+            #
+            # mongo.db.users.update_one(
+            #     {'_id': user_id},
+            #     {'$set': {
+            #         f'permissions.{project_id.inserted_id}': {
+            #             'role': 'admin',
+            #             'classifications': {}
+            #         }
+            #     }}
+            # )
+
+            return 'success'
+
+        # ''' Delete project '''
+        # if flask.request.method == 'DELETE':
+        #
+        #     if project_id is not None:
+        #         _tmp = mongo.db.projects.find_one({'_id': ObjectId(project_id)})
+        #         # print(_tmp)
+        #
+        #         if _tmp is not None and len(_tmp) > 0:
+        #             # check user is admin for the project:
+        #             permissions = mongo.db.users.find_one({'_id': user_id}, {'_id': 0, 'permissions': 1})['permissions']
+        #             if project_id in permissions:
+        #                 if permissions[project_id]['role'] == 'admin':
+        #                     # try to remove the project:
+        #                     mongo.db.projects.delete_one({'_id': ObjectId(project_id)})
+        #
+        #                     # clean up datasets:
+        #                     mongo.db.datasets.delete_many({'project_id': ObjectId(project_id)})
+        #
+        #                     # clean up users:
+        #                     mongo.db.users.update(
+        #                         {f'permissions.{project_id}': {'$exists': True}},
+        #                         {'$unset': {
+        #                             f'permissions.{project_id}': ''
+        #                         }},
+        #                         multi=True
+        #                     )
+        #
+        #                     return 'success'
+        #                 else:
+        #                     flask.abort(403)
+        #                     # return f'user {user_id} is not admin for project_id {project_id}'
+        #             else:
+        #                 flask.abort(403)
+        #                 # return f'user {user_id} not on project_id {project_id}'
+        #
+        #         else:
+        #             return f'project_id {project_id} not found'
+        #     else:
+        #         return 'project_id not defined'
+        #
+        # ''' Modify project '''
+        # if flask.request.method == 'POST':
+        #
+        #     if project_id is not None:
+        #
+        #         _tmp = mongo.db.projects.find_one({'_id': ObjectId(project_id)})
+        #         # print(_tmp)
+        #
+        #         if _tmp is not None and len(_tmp) > 0:
+        #
+        #             # check user is admin for the project:
+        #             permissions = mongo.db.users.find_one({'_id': user_id}, {'_id': 0, 'permissions': 1})['permissions']
+        #             if project_id in permissions:
+        #                 if permissions[project_id]['role'] == 'admin':
+        #
+        #                     print(flask.request.json)
+        #                     add_user = flask.request.json.get('add_user', None)
+        #                     add_user_role = flask.request.json.get('add_user_role', None)
+        #                     add_classes = flask.request.json.get('classes', None)
+        #                     # TODO:
+        #                     remove_user = flask.request.json.get('remove_user', None)
+        #                     remove_class = flask.request.json.get('remove_class', None)
+        #
+        #                     # adding class(es)?
+        #                     if add_classes is not None:
+        #
+        #                         if len(add_classes) == 0:
+        #                             return 'classes must be set'
+        #
+        #                         classes = add_classes.split()
+        #
+        #                         classes_old = mongo.db.projects.find_one({'_id': ObjectId(project_id)},
+        #                                                                  {'_id': 0, 'classes': 1})['classes']
+        #
+        #                         classes = sorted(list(set(classes + classes_old)))
+        #
+        #                         mongo.db.projects.update_one(
+        #                             {'_id': ObjectId(project_id)},
+        #                             {'$set': {
+        #                                 'classes': classes
+        #                             }}
+        #                         )
+        #
+        #                     # adding user?
+        #                     if add_user is not None and add_user_role is not None:
+        #                         if add_user_role not in ('user', 'admin'):
+        #                             return f'role {add_user_role} not recognized'
+        #                         _tmp = mongo.db.users.find_one({'_id': add_user}, {'_id': 1})
+        #                         if _tmp is not None and len(_tmp) > 0:
+        #                             mongo.db.users.update_one(
+        #                                 {'_id': add_user},
+        #                                 {'$set': {
+        #                                     f'permissions.{project_id}': {'role': add_user_role,
+        #                                                                   'classifications': {}}
+        #                                 }}
+        #                             )
+        #                         else:
+        #                             return f'user {add_user} not found'
+        #
+        #                     return 'success'
+        #                 else:
+        #                     flask.abort(403)
+        #                     # return f'user {user_id} is not admin for project_id {project_id}'
+        #             else:
+        #                 flask.abort(403)
+        #                 # return f'user {user_id} not on project_id {project_id}'
+        #
+        #         else:
+        #             return f'project_id {project_id} not found'
+        #
+        #     else:
+        #         return 'project_id not defined'
 
     except Exception as _e:
         # FIXME: this is for debugging

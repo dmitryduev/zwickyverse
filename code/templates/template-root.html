@@ -1,5 +1,10 @@
 {% extends "template.html" %}
 
+{% block css %}
+    {{ dropzone.load_css() }}
+    {{ dropzone.style('border: 2px dashed #0087F7; margin: 10px 0 10px; min-height: 300px; width: 100%') }}
+{% endblock %}
+
 {% block nav_home %}
     active
 {% endblock %}
@@ -302,13 +307,59 @@
     <!-- End Modal -->
 
 
+    <!-- Add Dataset Modal -->
+    <div class="modal fade" tabindex="-1" role="dialog" id="addDatasetModal">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add dataset</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addDataset">
+                        <input id="form-projectid" type="hidden" class="form-control"
+                                       name="project_id" autocomplete="off">
+
+                        <div class="form-group">
+                            <label for="form-name">Dataset name</label>
+                            <input id="form-name" type="text" class="form-control"
+                                   name="name" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="form-name">Dataset description</label>
+                            <input id="form-name" type="text" class="form-control"
+                                   name="description" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="form-files">Files</label>
+{#                            <input id="form-files" type="text" class="form-control"#}
+{#                                   name="files" autocomplete="off">#}
+                            {{ dropzone.create() }}
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="addDatasetButton">Save</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    <!-- End Modal -->
+
+
 {% endblock %}
 
 {% block js %}
+    {{ dropzone.load_js() }}
+    {{ dropzone.config() }}
+
     <script>
         // add project id to modals:
         // Build modal on-the-fly
-        $('#addDataClassesModal, #addUserModal').on('show.bs.modal', function (event) {
+        $('#addDataClassesModal, #addUserModal, #addDatasetModal').on('show.bs.modal', function (event) {
             var trigger = $(event.relatedTarget); // Who triggered the modal? [to extract info]
             // Extract info from data-* attributes
             var projectid = trigger.data('projectid');
