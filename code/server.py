@@ -711,7 +711,7 @@ def projects(project_id=None):
                     if project_id in permissions:
                         if permissions[project_id]['role'] == 'admin':
 
-                            print(flask.request.json)
+                            # print(flask.request.json)
                             add_user = flask.request.json.get('add_user', None)
                             add_user_role = flask.request.json.get('add_user_role', None)
                             add_classes = flask.request.json.get('classes', None)
@@ -798,31 +798,41 @@ def datasets(project_id, dataset_id=None):
 
         ''' Add dataset '''
         if flask.request.method == 'PUT':
+            # check user is admin for the project:
+            permissions = mongo.db.users.find_one({'_id': user_id}, {'_id': 0, 'permissions': 1})['permissions']
+            if project_id in permissions:
+                if permissions[project_id]['role'] == 'admin':
+                    # print(flask.request.json)
+                    name = flask.request.json.get('name', '')
+                    description = flask.request.json.get('description', '')
 
-            # print(flask.request.json)
-            name = flask.request.json.get('name', '')
-            description = flask.request.json.get('description', '')
+                    if len(name) == 0:
+                        return 'dataset name must be set'
 
-            if len(name) == 0:
-                return 'dataset name must be set'
+                    # add to db:
+                    dataset_inserted = mongo.db.datasets.insert_one(
+                        {'name': name,
+                         'description': description,
+                         # 'files': {},  # TODO? push file names here as they get uploaded?
+                         'last_modified': datetime.datetime.now()}
+                    )
 
-            # add to db:
-            dataset_inserted = mongo.db.datasets.insert_one(
-                {'name': name,
-                 'description': description,
-                 # 'files': {},  # TODO? push file names here as they get uploaded?
-                 'last_modified': datetime.datetime.now()}
-            )
+                    mongo.db.projects.update_one(
+                        {'_id': ObjectId(project_id)},
+                        {'$set': {
+                            f'datasets.{dataset_inserted.inserted_id}': {}
+                        }}
+                    )
 
-            mongo.db.projects.update_one(
-                {'_id': ObjectId(project_id)},
-                {'$set': {
-                    f'datasets.{dataset_inserted.inserted_id}': {}
-                }}
-            )
+                    # todo: return dataset_id
+                    return flask.jsonify({'status': 'success', 'dataset_id': str(dataset_inserted.inserted_id)})
 
-            # todo: return dataset_id
-            return flask.jsonify({'status': 'success', 'dataset_id': str(dataset_inserted.inserted_id)})
+                else:
+                    flask.abort(403)
+                    # return f'user {user_id} is not admin for project_id {project_id}'
+            else:
+                flask.abort(403)
+                # return f'user {user_id} not on project_id {project_id}'
 
         ''' Modify dataset (upload files) '''
         if flask.request.method == 'POST':
