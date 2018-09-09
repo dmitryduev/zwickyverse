@@ -899,9 +899,9 @@ def datasets_classify(project_id, dataset_id):
                     classes = mongo.db.projects.find_one({'_id': ObjectId(project_id)},
                                                          {'_id': 0, 'classes': 1})['classes']
 
-                    classifications = permissions[project_id]['classifications']
-                    # FIXME:
-                    classifications = {'strkid5891521828150037_pid589152182815_scimref.jpg': ['streak']}
+                    classifications = permissions[project_id]['classifications'][dataset_id] \
+                            if dataset_id in permissions[project_id]['classifications'] else {}
+                    # classifications = {'strkid5891521828150037_pid589152182815_scimref.jpg': ['streak']}
 
                     path_dataset = os.path.join(config['path']['path_data'], 'datasets', dataset_id)
 
@@ -929,11 +929,20 @@ def datasets_classify(project_id, dataset_id):
                 # TODO:
                 classifications = json.loads(flask.request.get_data())
                 classifications = {k: v for k, v in classifications.items() if len(v) > 0}
-                date = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-                with open(f'/Users/dmitryduev/_caltech/python/deep-asteroids/data-raw/zooniverse.{date}.json',
-                          'w') as f:
-                    json.dump(classifications, f, indent=2)
-                return flask.jsonify({'status': 'success'})
+
+                # dump to db:
+                mongo.db.users.update_one(
+                    {'_id': user_id},
+                    {'$set': {
+                        f'permissions.{project_id}.classifications.{dataset_id}': classifications
+                    }}
+                )
+
+                # date = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                # with open(f'/Users/dmitryduev/_caltech/python/deep-asteroids/data-raw/zooniverse.{date}.json',
+                #           'w') as f:
+                #     json.dump(classifications, f, indent=2)
+                return 'success'
 
             else:
                 return f'dataset_id {dataset_id} not found'
@@ -953,7 +962,7 @@ def datasets_classify(project_id, dataset_id):
                     mongo.db.users.update_one(
                         {'_id': user_id},
                         {'$set': {
-                            f'permissions.{dataset_id}.classifications': {}
+                            f'permissions.{project_id}.classifications.{dataset_id}': {}
                         }}
                     )
 

@@ -391,12 +391,12 @@
                                 myDropzone.processQueue();
                             }
                             else {
-                                $('#addUserModal').modal('hide');
+                                $('#addDatasetModal').modal('hide');
                                 showFlashingMessage('Info:', data, 'danger');
                             }
                         },
                         error: function(data) {
-                            $('#addUserModal').modal('hide');
+                            $('#addDatasetModal').modal('hide');
                             showFlashingMessage('Info:', data, 'danger');
                         }
                     });
@@ -496,12 +496,12 @@
                         location.reload(true);
                     }
                     else {
-                        $('#addUserModal').modal('hide');
+                        $('#addProjectModal').modal('hide');
                         showFlashingMessage('Info:', data, 'danger');
                     }
                 },
                 error: function(data) {
-                    $('#addUserModal').modal('hide');
+                    $('#addProjectModal').modal('hide');
                     showFlashingMessage('Info:', data, 'danger');
                 }
             });

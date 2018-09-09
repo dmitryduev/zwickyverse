@@ -11,7 +11,7 @@
                             <b>{{obj}}</b>
                         </div>
                         <div class="col-6">
-                            <img src="/data/{{-dataset_id-}}/{{obj}}">
+                            <img src="/data/datasets/{{-dataset_id-}}/{{obj}}">
                         </div>
                         <div class="col-6">
                             {% for class in classes %}
@@ -30,7 +30,8 @@
             {% endfor %}
 
             <div class="form-group row">
-                <button type="button" class="btn btn-dark btn-sm" id="save">Save to JSON</button>
+                <button type="button" class="btn btn-dark btn-sm" id="save">Save</button>&nbsp;&nbsp;
+                <button type="button" class="btn btn-dark btn-sm" id="download">Download JSON</button>
             </div>
         </form>
 
@@ -60,7 +61,7 @@
         $(document).ready(function() {
             $('#save').click(function () {
                 bootbox.confirm({
-                    message: "Do you want to submit the query?",
+                    message: "Do you want to save your classifications to DB?",
                     buttons: {
                         cancel: {
                             label: '<i class="fas fa-times"></i> Cancel'
@@ -77,11 +78,19 @@
                             {#$('#cutouts_form').submit();#}
                             $.ajax({
                                 type: "POST",
-                                url: '/TODO:',
+                                url: '/projects/{{-project_id-}}/datasets/{{-dataset_id-}}/classify',
                                 data: JSON.stringify(json),
                                 success: function(data) {
-                                           alert(data['status']);
-                                         }
+                                    if (data === 'success') {
+                                        showFlashingMessage('Info:', data, 'success');
+                                    }
+                                    else {
+                                        showFlashingMessage('Info:', data, 'danger');
+                                    }
+                                },
+                                error: function(data) {
+                                    showFlashingMessage('Info:', data, 'danger');
+                                }
                             });
                         }
                     }
