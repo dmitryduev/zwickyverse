@@ -481,6 +481,20 @@ def data_static(filename):
     return flask.send_from_directory(os.path.join(config['path']['path_data'], _p), _f)
 
 
+def stream_template(template_name, **context):
+    """
+        see: http://flask.pocoo.org/docs/0.11/patterns/streaming/
+    :param template_name:
+    :param context:
+    :return:
+    """
+    app.update_template_context(context)
+    t = app.jinja_env.get_template(template_name)
+    rv = t.stream(context)
+    rv.enable_buffering(5)
+    return rv
+
+
 @app.route('/', methods=['GET', 'POST'])
 def root():
     if flask_login.current_user.is_anonymous:
@@ -523,79 +537,11 @@ def root():
             # print(projects)
 
             # TODO: superusers can see and do everything
-            # otherwise, there are two roles: admin and user
-            _projects = {'5b9236ae497dcf000c154a1d': {'name': 'project1',
-                                'description': 'Lorem ipsum dolor sit amet',
-                                'datasets': {'dataset1': {
-                                                 'description': 'Omnia mea mecum porto',
-                                                 'data': ['file1.jpg', 'file2.jpg', 'file3.jpg', 'file4.jpg']},
-                                             'dataset2': {
-                                                 'description': 'Sic transit glori mundi',
-                                                 'data': ['file1.jpg']}
-                                             },
-                                'classes': ['class1', 'class2', 'class3'],
-                                'users': [{'user1': {'role': 'admin'}},
-                                          {'user2': {'role': 'user'}},
-                                          {'user3': {'role': 'user'}}],
-                                'role': 'admin'
-                                },
-                        'id2': {'name': 'project2',
-                                'description': 'Lorem ipsum dolor sit amet',
-                                'datasets': {'dataset1': {
-                                    'description': None,
-                                    'data': ['file1.jpg', 'file2.jpg']}
-                                },
-                                'classes': ['class1', 'class2'],
-                                'role': 'user'
-                                }
-                        }
 
             return flask.render_template('template-root.html',
                                          logo=config['server']['logo'],
                                          user=user_id,
                                          projects=projects)
-
-    classes = {
-        0: "Plausible Asteroid (short streak)",
-        1: "Satellite (long streak - could be partially masked)",
-        2: "Masked bright star",
-        3: "Dementors and ghosts",
-        4: "Cosmic rays",
-        5: "Yin-Yang (multiple badly subtracted stars)",
-        6: "Satellite flashes",
-        7: "Skip (Includes 'Not Sure' and seemingly 'Blank Images')"
-    }
-
-    if flask.request.method == 'GET':
-        return flask.render_template('template-root.html',
-                                     user=user_id,
-                                     logo=config['server']['logo'],
-                                     cutouts={'1': ['a']}, classes=list(classes.values()))
-
-    # TODO: get latest json
-    with open('/Users/dmitryduev/_caltech/python/deep-asteroids/data-raw/zooniverse.20180822.json', 'r') as f:
-        classifications_raw = json.load(f)
-
-    if flask.request.method == 'GET':
-        classifications = dict()
-        # i = 0
-        for crk, crv in classifications_raw.items():
-            if os.path.exists(os.path.join('/Users/dmitryduev/_caltech/python/deep-asteroids/data-raw/zooniverse',
-                                           crk)):
-                classifications[crk] = crv
-            #     i += 1
-            # if i > 4:
-            #     break
-
-        return flask.render_template('template-root.html', logo='Zwickyverse',
-                                     cutouts=classifications, classes=list(classes.values()))
-    elif flask.request.method == 'POST':
-        classifications = json.loads(flask.request.get_data())
-        classifications = {k: v for k, v in classifications.items() if len(v) > 0}
-        date = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-        with open(f'/Users/dmitryduev/_caltech/python/deep-asteroids/data-raw/zooniverse.{date}.json', 'w') as f:
-            json.dump(classifications, f, indent=2)
-        return flask.jsonify({'status': 'success'})
 
 
 ''' Projects API '''
@@ -799,12 +745,11 @@ def datasets(project_id, dataset_id=None):
 
         ''' web endpoint '''
         if flask.request.method == 'GET':
-            # FIXME: TODO:
-            if project_id is None:
-                # display all projects for user
+            if dataset_id is None:
+                # TODO: display all datasets for project
                 return flask.redirect(flask.url_for('root'))
             else:
-                # display single project
+                # TODO: display single dataset
                 return flask.redirect(flask.url_for('root'))
 
         ''' Add dataset '''
@@ -917,6 +862,107 @@ def datasets(project_id, dataset_id=None):
                     return f'project_id {project_id} not found'
             else:
                 return 'project_id not defined'
+
+    except Exception as _e:
+        # FIXME: this is for debugging
+        print(_e)
+        return str(_e)
+
+
+@app.route('/projects/<string:project_id>/datasets/<string:dataset_id>/classify', methods=['GET', 'POST', 'DELETE'])
+@flask_login.login_required
+def datasets_classify(project_id, dataset_id):
+
+    def find_files(_path_dataset, _classifications):
+        for dir_name, subdir_list, file_list in os.walk(_path_dataset, followlinks=True):
+            for fname in file_list:
+                if fname.endswith('.jpg') or fname.endswith('.png'):
+                    if fname in _classifications:
+                        yield _classifications[fname]
+                    else:
+                        yield {fname: []}
+
+    try:
+        user_id = flask_login.current_user.id
+
+        ''' web endpoint '''
+        if flask.request.method == 'GET':
+
+            _tmp = mongo.db.datasets.find_one({'_id': ObjectId(dataset_id)})
+            # print(_tmp)
+
+            if _tmp is not None and len(_tmp) > 0:
+                # check user has access to the project:
+                permissions = mongo.db.users.find_one({'_id': user_id}, {'_id': 0, 'permissions': 1})['permissions']
+                if project_id in permissions:
+
+                    classes = mongo.db.projects.find_one({'_id': ObjectId(project_id)},
+                                                         {'_id': 0, 'classes': 1})['classes']
+
+                    classifications = permissions[project_id]['classifications']
+
+                    path_dataset = os.path.join(config['path']['path_data'], 'datasets', dataset_id)
+
+                    return flask.Response(stream_template('template-dataset.html',
+                                                          logo=config['server']['logo'],
+                                                          user=user_id,
+                                                          project_id=project_id,
+                                                          dataset_id=dataset_id,
+                                                          classes=classes,
+                                                          classifications=find_files(path_dataset, classifications)))
+
+                else:
+                    flask.abort(403)
+
+            else:
+                return f'project_id {project_id} not found'
+
+        ''' Save/export classifications '''
+        if flask.request.method == 'POST':
+
+            _tmp = mongo.db.datasets.find_one({'_id': ObjectId(dataset_id)})
+            # print(_tmp)
+
+            if _tmp is not None and len(_tmp) > 0:
+                # TODO:
+                classifications = json.loads(flask.request.get_data())
+                classifications = {k: v for k, v in classifications.items() if len(v) > 0}
+                date = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                with open(f'/Users/dmitryduev/_caltech/python/deep-asteroids/data-raw/zooniverse.{date}.json',
+                          'w') as f:
+                    json.dump(classifications, f, indent=2)
+                return flask.jsonify({'status': 'success'})
+
+            else:
+                return f'dataset_id {dataset_id} not found'
+
+        ''' Reset classifications '''
+        if flask.request.method == 'DELETE':
+
+            _tmp = mongo.db.datasets.find_one({'_id': ObjectId(dataset_id)})
+            # print(_tmp)
+
+            if _tmp is not None and len(_tmp) > 0:
+                # check user has access to the project:
+                permissions = mongo.db.users.find_one({'_id': user_id}, {'_id': 0, 'permissions': 1})['permissions']
+                if project_id in permissions:
+
+                    # reset:
+                    mongo.db.users.update_one(
+                        {'_id': user_id},
+                        {'$set': {
+                            f'permissions.{dataset_id}.classifications': {}
+                        }}
+                    )
+
+                    return 'success'
+
+                else:
+                    flask.abort(403)
+                    # return f'user {user_id} not on project_id {project_id}'
+
+            else:
+                return f'dataset_id {dataset_id} not found'
 
     except Exception as _e:
         # FIXME: this is for debugging

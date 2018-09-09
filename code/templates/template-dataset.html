@@ -1,23 +1,28 @@
 {% extends "template.html" %}
 
+{% block nav_home %}
+    active
+{% endblock %}
+
 {% block body %}
+
     <div class="container">
         <form id="cutouts_form" class="form" method="post">
-            {% for cutout in cutouts %}
+            {% for obj in classifications %}
             <div class="form-group row">
                 <div class="col-12">
-                    <b>{{cutout}}</b>
+                    <b>{{obj}}</b>
                 </div>
                 <div class="col-6">
-                    <img src="/data/zooniverse/{{cutout}}">
+                    <img src="/data/{{-dataset_id-}}/{{obj}}">
                 </div>
                 <div class="col-6">
                     {% for class in classes %}
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" data-id="{{-cutout-}}"
-                                 value="{{-class-}}"{% if class in cutouts[cutout] %} checked="checked"{% endif %}>
-                          <label class="form-check-label" for="{{-cutout-}}_{{-class-}}">
-                              {{ class }}: {{ cutouts[cutout].count(class) }}
+                          <input class="form-check-input" type="checkbox" data-id="{{-obj-}}"
+                                 value="{{-class-}}"{% if class in classifications[obj] %} checked="checked"{% endif %}>
+                          <label class="form-check-label" for="{{-obj-}}_{{-class-}}">
+                              {{ class }}
                           </label>
                         </div>
                     {% endfor %}
@@ -32,4 +37,58 @@
         </form>
 
     </div>
+
+{% endblock %}
+
+{% block js %}
+    <script>
+        function construct_json() {
+            var json = {};
+            $("input:checkbox").each(function() {
+                if ( $(this).is(":checked") ) {
+                    {#alert($(this).val());#}
+                    if (!json.hasOwnProperty($(this).data("id"))) {
+                        json[$(this).data("id")] = [$(this).val()];
+                    }
+                    else {
+                        json[$(this).data("id")].push($(this).val());
+                    }
+                }
+            });
+            return json;
+        }
+
+        // submit query
+        $(document).ready(function() {
+            $('#save').click(function () {
+                bootbox.confirm({
+                    message: "Do you want to submit the query?",
+                    buttons: {
+                        cancel: {
+                            label: '<i class="fas fa-times"></i> Cancel'
+                        },
+                        confirm: {
+                            label: '<i class="fas fa-check"></i> Confirm'
+                        }
+                    },
+                    callback: function (result) {
+                        // console.log('This was logged in the callback: ' + result);
+                        // confirmed? emit request to server:
+                        if (result) {
+                            let json = construct_json();
+                            {#$('#cutouts_form').submit();#}
+                            $.ajax({
+                                type: "POST",
+                                url: '/TODO:',
+                                data: JSON.stringify(json),
+                                success: function(data) {
+                                           alert(data['status']);
+                                         }
+                            });
+                        }
+                    }
+                });
+            });
+        });
+    </script>
 {% endblock %}

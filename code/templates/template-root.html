@@ -140,9 +140,8 @@
                                         <div class="col-md-12">
                                             <h4>
                                                 {{ project['datasets'][dataset]['name'] }}
-                                                <button type="button" class="btn btn-sm btn-outline-dark"
-                                                        data-toggle="modal" data-target="#editUserModal"
-                                                        data-user="{{ u }}">classify</button>
+                                                <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}/classify"
+                                                   class="btn btn-sm btn-outline-dark">classify</a>
                                                 {% if project['role'] == 'admin' %}
                                                     <button type="button" class="btn btn-sm btn-outline-dark"
                                                             data-toggle="modal" data-target="#editUserModal"
