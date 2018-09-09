@@ -878,7 +878,7 @@ def datasets_classify(project_id, dataset_id):
             for fname in file_list:
                 if fname.endswith('.jpg') or fname.endswith('.png'):
                     if fname in _classifications:
-                        yield _classifications[fname]
+                        yield {fname: _classifications[fname]}
                     else:
                         yield {fname: []}
 
@@ -900,6 +900,8 @@ def datasets_classify(project_id, dataset_id):
                                                          {'_id': 0, 'classes': 1})['classes']
 
                     classifications = permissions[project_id]['classifications']
+                    # FIXME:
+                    classifications = {'strkid5891521828150037_pid589152182815_scimref.jpg': ['streak']}
 
                     path_dataset = os.path.join(config['path']['path_data'], 'datasets', dataset_id)
 

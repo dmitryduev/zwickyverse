@@ -1,34 +1,32 @@
 {% extends "template.html" %}
 
-{% block nav_home %}
-    active
-{% endblock %}
-
 {% block body %}
 
     <div class="container">
         <form id="cutouts_form" class="form" method="post">
-            {% for obj in classifications %}
-            <div class="form-group row">
-                <div class="col-12">
-                    <b>{{obj}}</b>
-                </div>
-                <div class="col-6">
-                    <img src="/data/{{-dataset_id-}}/{{obj}}">
-                </div>
-                <div class="col-6">
-                    {% for class in classes %}
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" data-id="{{-obj-}}"
-                                 value="{{-class-}}"{% if class in classifications[obj] %} checked="checked"{% endif %}>
-                          <label class="form-check-label" for="{{-obj-}}_{{-class-}}">
-                              {{ class }}
-                          </label>
+            {% for objz in classifications %}
+                {% for obj in objz %}
+                    <div class="form-group row">
+                        <div class="col-12">
+                            <b>{{obj}}</b>
                         </div>
-                    {% endfor %}
-                </div>
-            </div>
-            <hr>
+                        <div class="col-6">
+                            <img src="/data/{{-dataset_id-}}/{{obj}}">
+                        </div>
+                        <div class="col-6">
+                            {% for class in classes %}
+                                <div class="form-check">
+                                  <input class="form-check-input" type="checkbox" data-id="{{-obj-}}"
+                                         value="{{-class-}}"{% if class in objz[obj] %} checked="checked"{% endif %}>
+                                  <label class="form-check-label" for="{{-obj-}}_{{-class-}}">
+                                      {{ class }}
+                                  </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <hr>
+                {% endfor %}
             {% endfor %}
 
             <div class="form-group row">
