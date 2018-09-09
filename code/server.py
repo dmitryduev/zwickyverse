@@ -672,6 +672,17 @@ def projects(project_id=None):
                             mongo.db.projects.delete_one({'_id': ObjectId(project_id)})
 
                             # clean up datasets:
+                            dataset_ids = mongo.db.datasets.find({'project_id': ObjectId(project_id)},
+                                                                 {'_id': 1})
+                            # print(list(dataset_ids))
+                            for ds in dataset_ids:
+                                # delete files:
+                                path_dataset = os.path.join(config['path']['path_data'], 'datasets', str(ds['_id']))
+                                try:
+                                    shutil.rmtree(path_dataset)
+                                finally:
+                                    pass
+
                             mongo.db.datasets.delete_many({'project_id': ObjectId(project_id)})
 
                             # clean up users:
@@ -813,6 +824,7 @@ def datasets(project_id, dataset_id=None):
                     dataset_inserted = mongo.db.datasets.insert_one(
                         {'name': name,
                          'description': description,
+                         'project_id': ObjectId(project_id),
                          # 'files': {},  # TODO? push file names here as they get uploaded?
                          'last_modified': datetime.datetime.now()}
                     )
