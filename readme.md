@@ -29,7 +29,7 @@ Create `secrets.json` with the `Kowalski` login credentials and admin user/passw
 
 #### Using `docker-compose` (for production)
 
-Change `private.caltech.edu` on line 40 in `docker-compose.yml` and line 88 in `traefik/traefik.toml` to your domain. 
+Change `private.caltech.edu` on line 39 in `docker-compose.yml` and line 88 in `traefik/traefik.toml` to your domain. 
 
 Run `docker-compose` to start the service:
 ```bash
