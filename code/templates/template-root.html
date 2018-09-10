@@ -3,6 +3,13 @@
 {% block css %}
     {{ dropzone.load_css() }}
     {{ dropzone.style('border: 2px dashed #0087F7; margin: 10px 0 10px; min-height: 300px; width: 100%') }}
+
+    <style>
+    .dropzone .dz-preview .dz-image {
+        width: 80px;
+        height: 80px;
+    }
+    </style>
 {% endblock %}
 
 {% block nav_home %}
@@ -448,6 +455,9 @@
             dictMaxFilesExceeded: "Your can't upload any more files.",
             // timeout
             // custom options code
+            createImageThumbnails: false,
+            thumbnailWidth: 40,
+            thumbnailHeight: 40
         };
 
         // remove dataset
