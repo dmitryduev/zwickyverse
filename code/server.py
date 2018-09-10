@@ -1,6 +1,8 @@
 import inspect
 import json
 import shutil
+import io
+import zipfile
 from collections import ChainMap
 import pymongo
 
@@ -296,7 +298,11 @@ def manage_users():
         cursor = mongo.db.users.find()
         for usr in cursor:
             # print(usr)
-            _users[usr['_id']] = {'permissions': usr['permissions']}
+            _users[usr['_id']] = {'permissions': {}}
+            for project in usr['permissions']:
+                _users[usr['_id']]['permissions'][project] = {}
+                _users[usr['_id']]['permissions'][project]['role'] = usr['permissions'][project]['role']
+                # _users[usr['_id']]['permissions'][project]['classifications'] = 'NOT DISPLAYED HERE'
         cursor.close()
 
         return flask.render_template('template-users.html',
@@ -357,7 +363,7 @@ def edit_user():
             id = flask.request.json.get('_user', None)
             username = flask.request.json.get('edit-user', '')
             password = flask.request.json.get('edit-password', '')
-            permissions = flask.request.json.get('edit-permissions', '{}')
+            # permissions = flask.request.json.get('edit-permissions', '{}')
 
             if id == secrets['database']['admin_username'] and username != secrets['database']['admin_username']:
                 return 'Cannot change the admin username!'
@@ -385,22 +391,22 @@ def edit_user():
                 )
 
             # change permissions:
-            if len(permissions) != 0:
-                select = mongo.db.users.find_one({'_id': username}, {'_id': 0, 'permissions': 1})
-                # print(select)
-                # print(permissions)
-                _p = literal_eval(str(permissions))
-                # print(_p)
-                if str(permissions) != str(select['permissions']):
-                    result = mongo.db.users.update(
-                        {'_id': id},
-                        {
-                            '$set': {
-                                'permissions': _p
-                            },
-                            '$currentDate': {'last_modified': True}
-                        }
-                    )
+            # if len(permissions) != 0:
+            #     select = mongo.db.users.find_one({'_id': username}, {'_id': 0, 'permissions': 1})
+            #     # print(select)
+            #     # print(permissions)
+            #     _p = literal_eval(str(permissions))
+            #     # print(_p)
+            #     if str(permissions) != str(select['permissions']):
+            #         result = mongo.db.users.update(
+            #             {'_id': id},
+            #             {
+            #                 '$set': {
+            #                     'permissions': _p
+            #                 },
+            #                 '$currentDate': {'last_modified': True}
+            #             }
+            #         )
 
             return 'success'
         except Exception as _e:
@@ -573,8 +579,8 @@ def projects(project_id=None):
             description = flask.request.json.get('description', '')
             classes = flask.request.json.get('classes', '')
 
-            if len(name) == 0 or len(classes) == 0:
-                return 'name and classes must be set'
+            if (len(name) == 0) or (len(description) == 0) or (len(classes) == 0):
+                return 'all fields are compulsory'
 
             classes = sorted(list(set(classes.split())))
 
@@ -626,8 +632,8 @@ def projects(project_id=None):
                                 path_dataset = os.path.join(config['path']['path_data'], 'datasets', str(ds['_id']))
                                 try:
                                     shutil.rmtree(path_dataset)
-                                finally:
-                                    pass
+                                except Exception as e:
+                                    print(str(e))
 
                             mongo.db.datasets.delete_many({'project_id': ObjectId(project_id)})
 
@@ -749,6 +755,26 @@ def datasets(project_id, dataset_id=None):
                 # TODO: display all datasets for project
                 return flask.redirect(flask.url_for('root'))
             else:
+                # download dataset as archive:
+                download = flask.request.args.get('download', None, str)
+                if download is not None:
+                    if download == 'zip':
+                        path_dataset = os.path.join(config['path']['path_data'], 'datasets', dataset_id)
+
+                        zip_io = io.BytesIO()
+                        with zipfile.ZipFile(zip_io, mode='w', compression=zipfile.ZIP_DEFLATED) as backup_zip:
+                            for root, dirs, files in os.walk(path_dataset):
+                                for file in files:
+                                    backup_zip.write(os.path.join(root, file), file)
+
+                        time_tag = utc_now().strftime('%Y%m%d_%H%M%S')
+                        return flask.Response(zip_io.getvalue(),
+                                              mimetype='application/zip',
+                                              headers={'Content-Disposition':
+                                                       f'attachment;filename={dataset_id}.{time_tag}.zip'})
+                    else:
+                        return 'unknown format', 500
+
                 # TODO: display single dataset
                 return flask.redirect(flask.url_for('root'))
 
@@ -762,8 +788,8 @@ def datasets(project_id, dataset_id=None):
                     name = flask.request.json.get('name', '')
                     description = flask.request.json.get('description', '')
 
-                    if len(name) == 0:
-                        return 'dataset name must be set'
+                    if (len(name) == 0) or (len(description) == 0):
+                        return 'all fields are compulsory'
 
                     # add to db:
                     dataset_inserted = mongo.db.datasets.insert_one(
@@ -781,7 +807,13 @@ def datasets(project_id, dataset_id=None):
                         }}
                     )
 
-                    # todo: return dataset_id
+                    # mkdir
+                    path_dataset = os.path.join(config['path']['path_data'], 'datasets',
+                                                str(dataset_inserted.inserted_id))
+                    if not os.path.exists(path_dataset):
+                        os.makedirs(path_dataset)
+
+                    # return dataset_id
                     return flask.jsonify({'status': 'success', 'dataset_id': str(dataset_inserted.inserted_id)})
 
                 else:
@@ -839,8 +871,8 @@ def datasets(project_id, dataset_id=None):
                             path_dataset = os.path.join(config['path']['path_data'], 'datasets', dataset_id)
                             try:
                                 shutil.rmtree(path_dataset)
-                            finally:
-                                pass
+                            except Exception as e:
+                                print(str(e))
 
                             # clean up projects:
                             mongo.db.projects.update_one(

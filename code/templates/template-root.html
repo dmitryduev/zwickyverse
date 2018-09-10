@@ -160,7 +160,8 @@
                                                 </p>
                                             {% endif %}
                                             <p>
-                                                Number of files: {{ project['datasets'][dataset]['num_files'] }}
+                                                Number of files: {{ project['datasets'][dataset]['num_files'] }}<br>
+                                                <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}?download=zip">Download dataset</a>
                                             </p>
                                             {% if project['datasets'][dataset]['data'] | length > 0 %}
                                                 <p>
@@ -387,7 +388,13 @@
                         success: function(data) {
                             if (data['status'] === 'success') {
                                 dataset_id = data['dataset_id'];
-                                myDropzone.processQueue();
+                                let n_files = myDropzone.getAcceptedFiles().length;
+                                if (n_files > 0) {
+                                    myDropzone.processQueue();
+                                }
+                                else {
+                                    location.reload(true);
+                                }
                             }
                             else {
                                 $('#addDatasetModal').modal('hide');

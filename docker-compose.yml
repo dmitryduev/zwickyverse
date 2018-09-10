@@ -24,13 +24,8 @@ services:
       - data:/data
     expose:
       - "4000"
-#    ports:
-#      - 8000:4000
-#      - 4000
     links:
       - mongo:zwickyverse-mongo
-#      - mongo:mongo
-#    restart: on-failure
     restart: always
     depends_on:
       - mongo
@@ -43,9 +38,6 @@ services:
 
   mongo:
     image: mongo
-#    ports:
-#      - 27018:27017
-#      - 27017
     expose:
       - "27017"
     environment:
@@ -53,5 +45,4 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=mongoadminsecret
     volumes:
     - mongodb:/data/db
-#    restart: on-failure
     restart: always
