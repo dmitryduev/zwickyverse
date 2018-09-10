@@ -10,7 +10,7 @@ _Simplify data-set labeling for machine learning activities_
 Clone the repo and cd to the directory:
 ```bash
 git clone https://github.com/dmitryduev/zwickyverse.git
-cd ztf-wd
+cd zwickyverse
 ```
 
 Create `secrets.json` with the `Kowalski` login credentials and admin user/password for the website:
