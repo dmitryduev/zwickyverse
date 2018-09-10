@@ -143,11 +143,10 @@
                                                 <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}/classify"
                                                    class="btn btn-sm btn-outline-dark">classify</a>
                                                 {% if project['role'] == 'admin' %}
-                                                    <button type="button" class="btn btn-sm btn-outline-dark"
-                                                            data-toggle="modal" data-target="#editUserModal"
-                                                            data-user="{{ u }}">inspect</button>
+                                                    <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}/inspect"
+                                                       class="btn btn-sm btn-outline-dark">inspect</a>
                                                     <button type="button" class="btn btn-sm btn-outline-primary"
-                                                            data-toggle="modal" data-target="#editUserModal"
+                                                            data-toggle="modal" data-target="#editDatasetModal"
                                                             data-user="{{ u }}">edit</button>
                                                     <button type="button"
                                                             class="btn btn-sm btn-outline-danger removeDatasetButton"

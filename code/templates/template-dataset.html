@@ -3,23 +3,51 @@
 {% block body %}
 
     <div class="container">
-        <form id="cutouts_form" class="form" method="post">
+        <div class="row">
+            <div class="col-12">
+                <h3>Dataset:&nbsp; {{-dataset['name']-}}</h3>
+                <h5>id:&nbsp; {{-dataset['_id'] | string-}}</h5>
+                <p>{{-dataset['description']-}}</p>
+                <hr>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-2">
+                <button type="button" class="btn btn-outline-dark"
+                        style="cursor: pointer;" onclick="toggle_invert_cutouts()"
+                        data-toggle="tooltip" data-placement="top" title="Invert cutout colors">
+                    <i id="expansion_toggle" class="fas fa-adjust" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="col-10">
+                <label for="previewImageSize">Preview image size</label>
+                <input type="range" class="custom-range" min="0.25" max="3" step="0.25" id="previewImageSize">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <hr>
+            </div>
+        </div>
+
+        <form id="cutouts_form" class="form mt-3" method="post">
             {% for objz in classifications %}
                 {% for obj in objz %}
                     <div class="form-group row">
                         <div class="col-12">
                             <b>{{obj}}</b>
                         </div>
-                        <div class="col-6">
-                            <img src="/data/datasets/{{-dataset_id-}}/{{obj}}">
+                        <div class="col-md-6">
+                            <img src="/data/datasets/{{-dataset_id-}}/{{obj}}" class="preview-img">
                         </div>
-                        <div class="col-6">
+                        <div class="col-md-6">
                             {% for class in classes %}
                                 <div class="form-check">
                                   <input class="form-check-input" type="checkbox" data-id="{{-obj-}}"
                                          value="{{-class-}}"{% if class in objz[obj] %} checked="checked"{% endif %}>
                                   <label class="form-check-label" for="{{-obj-}}_{{-class-}}">
-                                      {{ class }}
+                                      {{ class }}{%-if inspect-%}: {{ objz[obj].count(class) }}{%-endif-%}
                                   </label>
                                 </div>
                             {% endfor %}
@@ -29,18 +57,50 @@
                 {% endfor %}
             {% endfor %}
 
-            <div class="form-group row">
-                <button type="button" class="btn btn-dark btn-sm" id="save">Save</button>&nbsp;&nbsp;
-                <button type="button" class="btn btn-dark btn-sm" id="download">Download JSON</button>
-            </div>
         </form>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="form-group row">
+                    <button type="button" class="btn btn-dark btn-sm" id="save">Save</button>&nbsp;&nbsp;
+                    <button type="button" class="btn btn-dark btn-sm" id="download">Download JSON</button>
+                </div>
+            </div>
+        </div>
 
     </div>
 
 {% endblock %}
 
 {% block js %}
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+
     <script>
+        var height = $(".preview-img").first().height();
+        $(document).ready(function() {
+            $("#previewImageSize").val(1);
+        });
+
+        $("#previewImageSize").change(function() {
+            {#console.log($(this).val());#}
+            $(".preview-img").css('height', height * $(this).val());
+        });
+
+        {# toggle cutout color invert #}
+        function toggle_invert_cutouts(){
+            $('.preview-img').toggleClass('invert');
+        }
+
+        function downloadObjectAsJSON(exportObj, exportName) {
+            var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj));
+            var downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", exportName + ".json");
+            document.body.appendChild(downloadAnchorNode); // required for firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
         function construct_json() {
             var json = {};
             $("input:checkbox").each(function() {
@@ -57,7 +117,7 @@
             return json;
         }
 
-        // submit query
+        // save classifications to DB
         $(document).ready(function() {
             $('#save').click(function () {
                 bootbox.confirm({
@@ -72,7 +132,7 @@
                     },
                     callback: function (result) {
                         // console.log('This was logged in the callback: ' + result);
-                        // confirmed? emit request to server:
+                        // confirmed?
                         if (result) {
                             let json = construct_json();
                             {#$('#cutouts_form').submit();#}
@@ -92,6 +152,32 @@
                                     showFlashingMessage('Info:', data, 'danger');
                                 }
                             });
+                        }
+                    }
+                });
+            });
+        });
+
+        // download classifications as JSON
+        $(document).ready(function() {
+            $('#download').click(function () {
+                bootbox.confirm({
+                    message: "Do you want to download your classifications as JSON?",
+                    buttons: {
+                        cancel: {
+                            label: '<i class="fas fa-times"></i> Cancel'
+                        },
+                        confirm: {
+                            label: '<i class="fas fa-check"></i> Confirm'
+                        }
+                    },
+                    callback: function (result) {
+                        // console.log('This was logged in the callback: ' + result);
+                        // confirmed?
+                        if (result) {
+                            let json = construct_json();
+                            let time_tag = moment().utc().format('YYYYMMDD_HHmmss');
+                            downloadObjectAsJSON(json, 'classifications.{{-dataset_id-}}.' + time_tag)
                         }
                     }
                 });

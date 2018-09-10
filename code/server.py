@@ -888,10 +888,10 @@ def datasets_classify(project_id, dataset_id):
         ''' web endpoint '''
         if flask.request.method == 'GET':
 
-            _tmp = mongo.db.datasets.find_one({'_id': ObjectId(dataset_id)})
+            dataset = mongo.db.datasets.find_one({'_id': ObjectId(dataset_id)})
             # print(_tmp)
 
-            if _tmp is not None and len(_tmp) > 0:
+            if dataset is not None and len(dataset) > 0:
                 # check user has access to the project:
                 permissions = mongo.db.users.find_one({'_id': user_id}, {'_id': 0, 'permissions': 1})['permissions']
                 if project_id in permissions:
@@ -908,8 +908,10 @@ def datasets_classify(project_id, dataset_id):
                     return flask.Response(stream_template('template-dataset.html',
                                                           logo=config['server']['logo'],
                                                           user=user_id,
+                                                          inspect=False,
                                                           project_id=project_id,
                                                           dataset_id=dataset_id,
+                                                          dataset=dataset,
                                                           classes=classes,
                                                           classifications=find_files(path_dataset, classifications)))
 
@@ -919,14 +921,13 @@ def datasets_classify(project_id, dataset_id):
             else:
                 return f'project_id {project_id} not found'
 
-        ''' Save/export classifications '''
+        ''' Save classifications '''
         if flask.request.method == 'POST':
 
             _tmp = mongo.db.datasets.find_one({'_id': ObjectId(dataset_id)})
             # print(_tmp)
 
             if _tmp is not None and len(_tmp) > 0:
-                # TODO:
                 classifications = json.loads(flask.request.get_data())
                 classifications = {k: v for k, v in classifications.items() if len(v) > 0}
 
@@ -971,6 +972,87 @@ def datasets_classify(project_id, dataset_id):
                 else:
                     flask.abort(403)
                     # return f'user {user_id} not on project_id {project_id}'
+
+            else:
+                return f'dataset_id {dataset_id} not found'
+
+    except Exception as _e:
+        # FIXME: this is for debugging
+        print(_e)
+        return str(_e)
+
+
+@app.route('/projects/<string:project_id>/datasets/<string:dataset_id>/inspect', methods=['GET', 'POST'])
+@flask_login.login_required
+def datasets_inspect(project_id, dataset_id):
+
+    def find_files(_path_dataset, _classifications):
+        for dir_name, subdir_list, file_list in os.walk(_path_dataset, followlinks=True):
+            for fname in file_list:
+                if fname.endswith('.jpg') or fname.endswith('.png'):
+                    if fname in _classifications:
+                        yield {fname: _classifications[fname]}
+                    else:
+                        yield {fname: []}
+
+    try:
+        user_id = flask_login.current_user.id
+
+        ''' web endpoint '''
+        if flask.request.method == 'GET':
+
+            dataset = mongo.db.datasets.find_one({'_id': ObjectId(dataset_id)})
+            # print(_tmp)
+
+            if dataset is not None and len(dataset) > 0:
+                # check user has access to the project:
+                permissions = mongo.db.users.find_one({'_id': user_id}, {'_id': 0, 'permissions': 1})['permissions']
+                if project_id in permissions:
+
+                    classes = mongo.db.projects.find_one({'_id': ObjectId(project_id)},
+                                                         {'_id': 0, 'classes': 1})['classes']
+
+                    classifications = permissions[project_id]['classifications'][dataset_id] \
+                            if dataset_id in permissions[project_id]['classifications'] else {}
+                    # classifications = {'strkid5891521828150037_pid589152182815_scimref.jpg': ['streak']}
+
+                    path_dataset = os.path.join(config['path']['path_data'], 'datasets', dataset_id)
+
+                    return flask.Response(stream_template('template-dataset.html',
+                                                          logo=config['server']['logo'],
+                                                          user=user_id,
+                                                          inspect=True,
+                                                          project_id=project_id,
+                                                          dataset_id=dataset_id,
+                                                          dataset=dataset,
+                                                          classes=classes,
+                                                          classifications=find_files(path_dataset, classifications)))
+
+                else:
+                    flask.abort(403)
+
+            else:
+                return f'project_id {project_id} not found'
+
+        ''' Save classifications '''
+        if flask.request.method == 'POST':
+
+            _tmp = mongo.db.datasets.find_one({'_id': ObjectId(dataset_id)})
+            # print(_tmp)
+
+            if _tmp is not None and len(_tmp) > 0:
+                classifications = json.loads(flask.request.get_data())
+                classifications = {k: v for k, v in classifications.items() if len(v) > 0}
+
+                # dump to db:
+                mongo.db.users.update_one(
+                    {'_id': user_id},
+                    {'$set': {
+                        f'permissions.{project_id}.classifications.{dataset_id}': classifications
+                    }}
+                )
+
+                return 'success'
 
             else:
                 return f'dataset_id {dataset_id} not found'
