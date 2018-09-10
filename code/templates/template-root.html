@@ -54,6 +54,7 @@
                         {% endif %}
                     </h3>
                     <p>
+                        <b>id:&nbsp{{-project_id-}}</b><br>
                         {{ project['description'] }}
                     </p>
 
@@ -154,11 +155,12 @@
                                                             data-projectid="{{-project_id-}}">remove</button>
                                                 {% endif %}
                                             </h4>
-                                            {% if project['datasets'][dataset]['description'] != None %}
-                                                <p>
+                                            <p>
+                                                <b>id:&nbsp{{-dataset-}}</b><br>
+                                                {% if project['datasets'][dataset]['description'] != None %}
                                                     {{ project['datasets'][dataset]['description'] }}
-                                                </p>
-                                            {% endif %}
+                                                {% endif %}
+                                            </p>
                                             <p>
                                                 Number of files: {{ project['datasets'][dataset]['num_files'] }}<br>
                                                 <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}?download=zip">Download dataset</a>

@@ -360,23 +360,23 @@ def edit_user():
 
     if flask_login.current_user.id == secrets['database']['admin_username']:
         try:
-            id = flask.request.json.get('_user', None)
+            _id = flask.request.json.get('_user', None)
             username = flask.request.json.get('edit-user', '')
             password = flask.request.json.get('edit-password', '')
             # permissions = flask.request.json.get('edit-permissions', '{}')
 
-            if id == secrets['database']['admin_username'] and username != secrets['database']['admin_username']:
+            if _id == secrets['database']['admin_username'] and username != secrets['database']['admin_username']:
                 return 'Cannot change the admin username!'
 
             if len(username) == 0:
                 return 'username must be set'
 
             # change username:
-            if id != username:
-                select = mongo.db.users.find_one({'_id': id})
+            if _id != username:
+                select = mongo.db.users.find_one({'_id': _id})
                 select['_id'] = username
                 mongo.db.users.insert_one(select)
-                mongo.db.users.delete_one({'_id': id})
+                mongo.db.users.delete_one({'_id': _id})
 
             # change password:
             if len(password) != 0:
@@ -399,7 +399,7 @@ def edit_user():
             #     # print(_p)
             #     if str(permissions) != str(select['permissions']):
             #         result = mongo.db.users.update(
-            #             {'_id': id},
+            #             {'_id': _id},
             #             {
             #                 '$set': {
             #                     'permissions': _p
@@ -708,6 +708,14 @@ def projects(project_id=None):
                                     return f'role {add_user_role} not recognized'
                                 _tmp = mongo.db.users.find_one({'_id': add_user}, {'_id': 1})
                                 if _tmp is not None and len(_tmp) > 0:
+                                    # check if user already assigned to project:
+                                    # check if username already exists:
+                                    select = mongo.db.users.find_one({'_id': add_user,
+                                                                      f'permissions.{project_id}': {'$exists': True}},
+                                                                     {'_id': 1})
+                                    if select is not None and len(select) > 0:
+                                        return f'user {add_user} already assigned to project {project_id}'
+
                                     mongo.db.users.update_one(
                                         {'_id': add_user},
                                         {'$set': {
