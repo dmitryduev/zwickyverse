@@ -1027,7 +1027,7 @@ def datasets_inspect(project_id, dataset_id):
                                 classifications[_cc] = _c[_cc]
                             else:
                                 classifications[_cc] += _c[_cc]
-                    print(classifications)
+                    # print(classifications)
 
                     path_dataset = os.path.join(config['path']['path_data'], 'datasets', dataset_id)
 
