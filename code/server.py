@@ -1012,9 +1012,22 @@ def datasets_inspect(project_id, dataset_id):
                     classes = mongo.db.projects.find_one({'_id': ObjectId(project_id)},
                                                          {'_id': 0, 'classes': 1})['classes']
 
-                    classifications = permissions[project_id]['classifications'][dataset_id] \
-                            if dataset_id in permissions[project_id]['classifications'] else {}
+                    # classifications = permissions[project_id]['classifications'][dataset_id] \
+                    #         if dataset_id in permissions[project_id]['classifications'] else {}
                     # classifications = {'strkid5891521828150037_pid589152182815_scimref.jpg': ['streak']}
+
+                    c = mongo.db.users.find({f'permissions.{project_id}.classifications.{dataset_id}':
+                                                 {'$exists': True}},
+                                            {f'permissions.{project_id}.classifications.{dataset_id}': 1})
+                    classifications = dict()
+                    for cc in c:
+                        _c = cc['permissions'][project_id]['classifications'][dataset_id]
+                        for _cc in _c:
+                            if _cc not in classifications:
+                                classifications[_cc] = _c[_cc]
+                            else:
+                                classifications[_cc] += _c[_cc]
+                    print(classifications)
 
                     path_dataset = os.path.join(config['path']['path_data'], 'datasets', dataset_id)
 
