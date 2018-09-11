@@ -568,6 +568,32 @@ def projects(project_id=None):
                 # display all projects for user
                 return flask.redirect(flask.url_for('root'))
             else:
+                # download dataset as archive:
+                download = flask.request.args.get('download', None, str)
+                if download is not None:
+                    if download == 'meta':
+                        project_doc = mongo.db.projects.find_one({'_id': ObjectId(project_id)})
+
+                        if project_doc is not None and len(project_doc) > 0:
+
+                            time_tag = utc_now().strftime('%Y%m%d_%H%M%S') + 'Z'
+
+                            project = {'_id': str(project_doc['_id']),
+                                       'classes': project_doc['classes'],
+                                       'datasets': list(project_doc['datasets'].keys()),
+                                       'created': time_tag}
+
+                            response = flask.jsonify(project)
+
+                            response.headers['Content-Disposition'] = f'attachment;filename={project_id}.json'
+
+                            return response
+
+                        else:
+                            return f'project {project_id} not found', 500
+                    else:
+                        return 'unknown format', 500
+
                 # display single project
                 return flask.redirect(flask.url_for('root'))
 
