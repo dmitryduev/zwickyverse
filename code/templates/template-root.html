@@ -63,7 +63,7 @@
                     <p>
                         <b>id:&nbsp{{-project_id-}}</b><br>
                         {{ project['description'] }}<br>
-                        <a href="/projects/{{-project_id-}}?download=meta">Download metadata</a>
+                        <a href="/projects/{{-project_id-}}?download=meta">Project metadata <i class="fas fa-download"></i></a>
                     </p>
 
                     <div class="accordion mb-2" id="accordion_{{-project_id-}}">
@@ -171,7 +171,8 @@
                                             </p>
                                             <p>
                                                 Number of files: {{ project['datasets'][dataset]['num_files'] }}<br>
-                                                <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}?download=zip">Download dataset</a>
+                                                <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}?download=dataset&format=zip">Dataset <i class="fas fa-download"></i></a><br>
+                                                <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}?download=classifications&format=json">Classifications <i class="fas fa-download"></i></a>
                                             </p>
                                             {% if project['datasets'][dataset]['data'] | length > 0 %}
                                                 <p>

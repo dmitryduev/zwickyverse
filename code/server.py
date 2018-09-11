@@ -791,23 +791,51 @@ def datasets(project_id, dataset_id=None):
             else:
                 # download dataset as archive:
                 download = flask.request.args.get('download', None, str)
-                if download is not None:
-                    if download == 'zip':
-                        path_dataset = os.path.join(config['path']['path_data'], 'datasets', dataset_id)
+                download_format = flask.request.args.get('format', None, str)
+                if (download is not None) and (download_format is not None):
+                    if download == 'dataset':
+                        if download_format == 'zip':
+                            path_dataset = os.path.join(config['path']['path_data'], 'datasets', dataset_id)
 
-                        zip_io = io.BytesIO()
-                        with zipfile.ZipFile(zip_io, mode='w', compression=zipfile.ZIP_DEFLATED) as backup_zip:
-                            for root, dirs, files in os.walk(path_dataset):
-                                for file in files:
-                                    backup_zip.write(os.path.join(root, file), file)
+                            zip_io = io.BytesIO()
+                            with zipfile.ZipFile(zip_io, mode='w', compression=zipfile.ZIP_DEFLATED) as backup_zip:
+                                for root, dirs, files in os.walk(path_dataset):
+                                    for file in files:
+                                        backup_zip.write(os.path.join(root, file), file)
 
-                        time_tag = utc_now().strftime('%Y%m%d_%H%M%S')
-                        return flask.Response(zip_io.getvalue(),
-                                              mimetype='application/zip',
-                                              headers={'Content-Disposition':
-                                                       f'attachment;filename={dataset_id}.{time_tag}.zip'})
+                            time_tag = utc_now().strftime('%Y%m%d_%H%M%S')
+                            return flask.Response(zip_io.getvalue(),
+                                                  mimetype='application/zip',
+                                                  headers={'Content-Disposition':
+                                                           f'attachment;filename={dataset_id}.{time_tag}.zip'})
+                        else:
+                            return 'unknown format', 500
+
+                    elif download == 'classifications':
+                        if download_format == 'json':
+                            classifications = mongo.db.users.find_one({'_id': user_id,
+                                                   f'permissions.{project_id}.classifications.{dataset_id}':
+                                                       {'$exists': True}},
+                                              {'_id': 0, f'permissions.{project_id}.classifications.{dataset_id}': 1})
+                            if len(classifications) > 0:
+                                classifications = \
+                                    classifications['permissions'][project_id]['classifications'][dataset_id]
+                            else:
+                                classifications = {}
+
+                            time_tag = utc_now().strftime('%Y%m%d_%H%M%S')
+
+                            response = flask.jsonify(classifications)
+
+                            response.headers['Content-Disposition'] = \
+                                f'attachment;filename={dataset_id}.{time_tag}.json'
+
+                            return response
+                        else:
+                            return 'unknown format', 500
+
                     else:
-                        return 'unknown format', 500
+                        return 'bad download request', 500
 
                 # TODO: display single dataset
                 return flask.redirect(flask.url_for('root'))
