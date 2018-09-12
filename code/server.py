@@ -687,6 +687,7 @@ def projects(project_id=None):
 
         ''' Modify project '''
         if flask.request.method == 'POST':
+            # print(flask.request.json)
 
             if project_id is not None:
 
@@ -751,6 +752,24 @@ def projects(project_id=None):
                                     )
                                 else:
                                     return f'user {add_user} not found'
+
+                            # removing user?
+                            if remove_user is not None:
+                                # print(remove_user)
+                                _tmp = mongo.db.users.find_one({'_id': remove_user}, {'_id': 1})
+                                if _tmp is not None and len(_tmp) > 0:
+                                    if remove_user == user_id:
+                                        return 'cannot remove thyself!'
+
+                                    mongo.db.users.update_one(
+                                        {'_id': remove_user},
+                                        {'$unset': {
+                                            f'permissions.{project_id}': ''
+                                        }}
+                                    )
+
+                                else:
+                                    return f'user {remove_user} not found'
 
                             return 'success'
                         else:

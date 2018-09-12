@@ -43,7 +43,7 @@
     <div class="container">
         <button type="button" class="btn btn-md btn-primary addButton"
                 data-toggle="modal" data-target="#addProjectModal"
-                data-user="{{ u }}"><i class="fas fa-plus"></i> New project</button>
+                data-user="{{-user-}}"><i class="fas fa-plus"></i> New project</button>
         {% for project in projects %}
             {% set project_id = project['_id'] | string %}
             <div class="row mt-2">
@@ -53,7 +53,7 @@
                         {% if project['role'] == 'admin' %}
                             <button type="button" class="btn btn-sm btn-outline-primary"
                                     data-toggle="modal" data-target="#editProjectModal"
-                                    data-user="{{ u }}">
+                                    data-user="{{-user-}}">
                                 edit</button>
                             <button type="button" class="btn btn-sm btn-outline-danger removeProjectButton"
                                     data-projectid="{{-project_id-}}">
@@ -112,12 +112,16 @@
                                      aria-labelledby="accordion_{{-project_id-}}_headingTwo"
                                      data-parent="#accordion_{{-project_id-}}">
                                     <div class="card-body" style="max-height: 200px; overflow-x: hidden; overflow-y: scroll">
-                                        {% for user in project['users'] %}
+                                        {% for u in project['users'] %}
                                             <span>
-                                                <b>{{ user }}</b>: {{ project['users'][user]['role'] }}
+                                                <b>{{ u }}</b>: {{ project['users'][u]['role'] }}
                                                 {# TODO: #}
-                                                <a href="#"><i class="fas fa-pen"></i></a>
-                                                <a href="#"><i class="fas fa-times"></i></a>
+                                                {% if u != user %}
+                                                    <a href="#"><i class="fas fa-pen"></i></a>
+                                                    <a href="#" class="removeUserLink"
+                                                       data-user="{{-u-}}"
+                                                       data-projectid="{{-project_id-}}"><i class="fas fa-times"></i></a>
+                                                {% endif %}
                                             </span><br>
                                         {% endfor %}
                                         {% if project['users'] | length > 0 %}
@@ -156,7 +160,7 @@
                                                        class="btn btn-sm btn-outline-dark">inspect</a>
                                                     <button type="button" class="btn btn-sm btn-outline-primary"
                                                             data-toggle="modal" data-target="#editDatasetModal"
-                                                            data-user="{{ u }}">edit</button>
+                                                            data-user="{{-user-}}">edit</button>
                                                     <button type="button"
                                                             class="btn btn-sm btn-outline-danger removeDatasetButton"
                                                             data-datasetid="{{-dataset-}}"
@@ -607,5 +611,37 @@
             });
             return false;
         });
+
+        // remove user from project
+        $('.removeUserLink').click(function (e) {
+            var projectid = $(this).data('projectid');
+            var user = $(this).data('user');
+            bootbox.confirm("Are you sure?", function(result) {
+                if (result) {
+                    $.ajax({url: '{{-script_root-}}/projects/' + projectid,
+                        method: 'POST',
+                        data: JSON.stringify({'remove_user': user}),
+                        processData: false,
+                        contentType: 'application/json',
+                        success: function(data) {
+                            if (data === 'success') {
+                                location.reload(true);
+                            }
+                            else {
+                                $('#addUserModal').modal('hide');
+                                showFlashingMessage('Info:', data, 'danger');
+                            }
+                        },
+                        error: function(data) {
+                            $('#addUserModal').modal('hide');
+                            showFlashingMessage('Info:', data, 'danger');
+                        }
+                    });
+                }
+            });
+
+            return false;
+        });
+
     </script>
 {% endblock %}
