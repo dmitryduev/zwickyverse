@@ -687,7 +687,6 @@ def projects(project_id=None):
 
         ''' Modify project '''
         if flask.request.method == 'POST':
-            # print(flask.request.json)
 
             if project_id is not None:
 
@@ -705,8 +704,9 @@ def projects(project_id=None):
                             add_user = flask.request.json.get('add_user', None)
                             add_user_role = flask.request.json.get('add_user_role', None)
                             add_classes = flask.request.json.get('classes', None)
-                            # TODO:
+
                             remove_user = flask.request.json.get('remove_user', None)
+                            # TODO:
                             remove_class = flask.request.json.get('remove_class', None)
 
                             # adding class(es)?

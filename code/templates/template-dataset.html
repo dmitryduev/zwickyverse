@@ -1,5 +1,9 @@
 {% extends "template.html" %}
 
+{% block css %}
+    <link rel="stylesheet" href="{{-script_root-}}/static/css/bootstrap-table.css">
+{% endblock %}
+
 {% block body %}
 
     <div class="container">
@@ -71,10 +75,445 @@
 
     </div>
 
+    <div class="container-fluid">
+
+    {% if classifications | length > 0 %}
+        <div id="toolbar" class="btn-group">
+{#            <button type="button" class="btn btn-outline-dark"#}
+{#                    style="cursor: pointer;" onclick="toggle_expansion()"#}
+{#                    data-toggle="tooltip" data-placement="top" title="Show/hide more">#}
+{#                <i id="expansion_toggle" class="fas fa-plus" aria-hidden="true"></i>#}
+{#            </button>#}
+
+            <button type="button" class="btn btn-outline-dark"
+                    style="cursor: pointer;" onclick="toggle_invert_cutouts()"
+                    data-toggle="tooltip" data-placement="top" title="Invert cutout colors">
+                <i id="expansion_toggle" class="fas fa-adjust" aria-hidden="true"></i>
+            </button>
+
+        </div>
+        <table id="table"
+               class="table table-hover table-condensed"
+               data-toggle="table"
+               data-toolbar="#toolbar"
+               data-pagination="true"
+               data-side-pagination="client"
+               data-minimum-count-columns="2"
+               data-page-size="20"
+               data-page-list="[20, 50, 100, 200, 500, All]"
+               data-search="true"
+               data-detail-view="true"
+               data-detail-formatter="detailFormatter"
+               data-show-columns="true"
+               data-show-multi-sort="true"
+               data-show-export="false"
+               data-export-types="['json', 'csv']"
+               data-export-options='{ "fileName": "classifications",
+                                      "worksheetName": "classifications"
+                                     }'>
+        </table>
+    {% endif %}
+    </div>
+
 {% endblock %}
 
 {% block js %}
+    <!-- Bootstrap table -->
+    <script src="{{-script_root-}}/static/js/bootstrap-table.js"></script>
+    <script src="{{-script_root-}}/static/js/bootstrap-table-en-US.js"></script>
+    <script src="{{-script_root-}}/static/js/tableExport.js"></script>
+    <script src="{{-script_root-}}/static/js/bootstrap-table-export.js"></script>
+    <script src="{{-script_root-}}/static/js/FileSaver.min.js"></script>
+    <script src="{{-script_root-}}/static/js/bootstrap-table-multiple-sort.js"></script>
+
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+
+    <script>
+        {% if classifications | length > 0 %}
+        // Fancy table stuff
+        function getHeight() {
+            var window_height = $(window).height();
+            {#console.log(window_height);#}
+            {#console.log(document.getElementById('table').getBoundingClientRect().top);#}
+            if (window_height > 1200) {
+                var top = document.getElementById('table').getBoundingClientRect().top;
+                return Math.max(560, window_height - top - 20);
+            }
+            else {
+                var top = document.getElementById('table').getBoundingClientRect().top;
+                return Math.max(560, window_height - top - 20);
+            }
+        }
+
+        var jd = new JulianDate();
+
+        // build table using js
+        $('#table').bootstrapTable({
+            height: getHeight(),
+            columns: [
+                [
+                    {
+                        field: 'obs_date',
+                        title: 'T_obs, UTC',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true,
+                        visible: true
+                    },
+                    {
+                        field: 'objectId',
+                        title: 'objectId',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true
+                    },
+                    {
+                        field: 'candid',
+                        title: 'candid',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true
+                    },
+
+                    {
+                        field: 'wd_name',
+                        title: 'name',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true
+                    },
+                    {
+                        field: 'wd_pwd',
+                        title: 'pwd',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true
+                    },
+                    {
+                        field: 'wd_gaia_dr2_id',
+                        title: 'Gaia DR2 ID',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true,
+                        visible: false
+                    },
+                    {
+                        field: 'wd_ra',
+                        title: 'R.A.',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true,
+                        visible: false
+                    },
+                    {
+                        field: 'wd_dec',
+                        title: 'Decl.',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true,
+                        visible: false
+                    },
+                    {
+                        field: 'wd_parallax',
+                        title: 'Gaia parallax',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true,
+                        visible: false
+                    },
+                    {
+                        field: 'wd_phot_g_mean_mag',
+                        title: 'Gaia mag',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true
+                    },
+                    {
+                        field: 'wd_l',
+                        title: 'l',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true,
+                        visible: false
+                    },
+                    {
+                        field: 'wd_b',
+                        title: 'b',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true,
+                        visible: false
+                    },
+                    {
+                        field: 'wd_SDSS_name',
+                        title: 'SDSS_name',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true,
+                        visible: false
+                    },
+                    {
+                        field: 'wd_Teff',
+                        title: 'Teff',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true,
+                        visible: false
+                    },
+
+                    {
+                        field: 'candidate',
+                        title: 'candidate',
+                        colspan: 7,
+                        align: 'center',
+                        valign: 'middle'
+                    }
+                ],
+
+                [
+                    {
+                        field: 'programid',
+                        title: 'programid',
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true,
+                        visible: false
+                    },
+                    {
+                        field: 'fid',
+                        title: 'fid',
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true
+                    },
+                    {
+                        field: 'rb',
+                        title: 'rb',
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true
+                    },
+                    {
+                        field: 'magpsf',
+                        title: 'magpsf',
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true
+                    },
+                    {
+                        field: 'sigmapsf',
+                        title: 'sigmapsf',
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true
+                    },
+                    {
+                        field: 'ra',
+                        title: 'R.A.',
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true
+                    },
+                    {
+                        field: 'dec',
+                        title: 'Decl.',
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true
+                    },
+
+                ]
+            ],
+            data: [
+                {% for alert in alerts %}
+                   {% set candid = alert['candid'] %}
+                   {% set objectId = alert['objectId'] %}
+                    {
+                        objectId: "{{objectId}}",
+                        candid: "{{candid}}",
+
+                        obs_date: moment(jd.julian({{ alert['candidate']['jd'] }}).getDate()).utc().format('YYYY/MM/DD_HH:mm:ss'),
+                        {#obs_date: moment(jd.julian({{ alert['candidate']['jd'] }}).getDate()).utc().format('YYYY/MM/DD_HH:mm:ss') + "__{{ alert['candidate']['jd'] }}",#}
+
+                        ra: "{{ alert['coordinates']['radec_str'][0] }}",
+                        dec: "{{ alert['coordinates']['radec_str'][1] }}",
+
+                        wd_name: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['White_dwarf_name']}}",
+                        wd_pwd: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['Pwd']}}".slice(0, 4),
+                        wd_gaia_dr2_id: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['source_id']}}",
+                        wd_ra: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['coordinates']['radec_str'][0]}}",
+                        wd_dec: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['coordinates']['radec_str'][1]}}",
+                        wd_parallax: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['parallax']}}".slice(0, 4),
+                        wd_phot_g_mean_mag: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['phot_g_mean_mag']}}".slice(0, 8),
+                        wd_l: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['l']}}",
+                        wd_b: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['b']}}",
+                        wd_SDSS_name: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['SDSS_name']}}",
+                        wd_Teff: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['Teff']}}",
+
+
+                        programid: "{{alert['candidate']['programid']}}",
+                        fid: "{{alert['candidate']['fid']}}",
+                        rb: "{{alert['candidate']['rb']}}".slice(0, 4),
+                        magpsf: "{{alert['candidate']['magpsf']}}".slice(0, 5),
+                        sigmapsf: "{{alert['candidate']['sigmapsf']}}".slice(0, 4)
+                    },
+                {% endfor %}
+            ]
+        });
+
+        // display details
+        function detailFormatter(index, row, element) {
+            var html = [];
+
+            html.push("<div class=\"row p-0 m-0\">");
+
+            // cutouts
+            var cutouts = ["science", "template", "difference"];
+
+            cutouts.forEach(function (cutout) {
+                html.push("<div class=\"col p-0 m-0\">");
+                html.push("<figure class='figure m-1 align-top'>");
+                html.push("<img class='figure-img img-fluid mb-1 cutout' src='/data/"+ row['candid']+ "_" + row['objectId'] + "/"+ cutout +".jpg'>");
+                html.push("<figcaption class='figure-caption text-center'>" + cutout + "</figcaption>");
+                html.push("</figure>");
+                html.push("</div>");
+            });
+
+            // lightcurve
+            html.push("<div class=\"col-4 p-0 m-0\">");
+            html.push("<figure class='figure ml-3 mt-1 mb-1 align-top'>");
+            html.push("<img class='figure-img img-fluid mr-1' style='width: 295px' src='/data/"+ row['candid']+ "_" + row['objectId'] + "/lightcurve.jpg'>");
+            html.push("<figcaption class='figure-caption text-center'>Light curve</figcaption>");
+            html.push("</figure>");
+            html.push("</div>");
+
+            // Buttons:
+            html.push("<div class=\"col-1 p-0 m-0\">");
+            html.push("<a role='button' download='" + row['candid'] + ".json' href='/alerts/" + row['candid'] +
+                "?download=json'" +
+                " class='btn btn-sm btn-outline-dark mt-1 ml-1 mb-1 align-top'>JSON <i class='fas fa-download'></i></a>");
+            // alert page:
+            html.push("<br>");
+            html.push("<a target='_blank' role='button' " + "href='/alerts/" + row['candid'] +
+                "' class='btn btn-sm btn-outline-dark mt-1 ml-1 mb-1 align-top'>Details <i class='fas fa-external-link-alt'></i></a>");
+            html.push("</div>");
+
+            // close row
+            html.push("</div>");
+
+            return html.join('');
+        }
+
+
+        // reset height of table with search results
+        function resetTableHeight() {
+            var $table = $('#table');
+            $table.bootstrapTable('resetView', {
+                height: getHeight()
+            });
+        }
+        $(document).ready(function() {
+            // on load
+            if( $('#table').length ) {
+                resetTableHeight();
+            }
+        });
+        $(window).resize(function () {
+            // on window resize
+            if( $('#table').length ) {
+                resetTableHeight();
+            }
+        });
+
+        // on accordion collapse/show
+        $('#coordinatesTab').on('hidden.bs.collapse', function () {
+          resetTableHeight();
+        });
+        $('#coordinatesTab').on('shown.bs.collapse', function () {
+          resetTableHeight();
+        });
+
+        {# table sorting #}
+        function getOrder() {
+            var $table = $('#table');
+            return $table.bootstrapTable('getOptions').sortOrder === 'asc' ? -1 : 1;
+        }
+
+        function numberSorter(a, b) {
+            a = $.trim(a.replace(/<\/?[^>]+(>|$)/g, ""));
+            b = $.trim(b.replace(/<\/?[^>]+(>|$)/g, ""));
+            if (!a || a === 'None') return -1 * getOrder();
+            if (!b || b === 'None') return 1 * getOrder();
+            if (parseFloat(a) < parseFloat(b)) return -1;
+            if (parseFloat(a) > parseFloat(b)) return 1;
+            return 0;
+        }
+
+        function stringSorter(a, b) {
+            a = $.trim(a.replace(/<\/?[^>]+(>|$)/g, ""));
+            b = $.trim(b.replace(/<\/?[^>]+(>|$)/g, ""));
+            if (!a || a === 'None') return -1 * getOrder();
+            if (!b || b === 'None') return 1 * getOrder();
+            if (a < b) return -1;
+            if (a > b) return 1;
+            return 0;
+        }
+
+        {# expand all rows in table #}
+        function toggle_expansion(){
+            if ($("#expansion_toggle").hasClass('fa-plus')) {
+                $('#table').bootstrapTable('expandAllRows', false);
+            }
+            else {
+                $('#table').bootstrapTable('collapseAllRows', false);
+            }
+            $("#expansion_toggle").toggleClass('fa-plus fa-minus');
+        }
+
+        {# toggle cutout color invert #}
+        function toggle_invert_cutouts(){
+            $('.cutout').toggleClass('invert');
+        }
+
+
+        {# init tooltips #}
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        });
+
+
+        {# actions #}
+        {# download json as files #}
+        function download(json, name, type) {
+            var a = document.createElement("a");
+            var file = new Blob([json], {type: type});
+            var url = URL.createObjectURL(file);
+            a.href = url;
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function(){
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 100);
+        }
+
+        {% endif %}
+    </script>
 
     <script>
         var height = $(".preview-img").first().height();
@@ -178,7 +617,7 @@
                         if (result) {
                             let json = construct_json();
                             let time_tag = moment().utc().format('YYYYMMDD_HHmmss');
-                            downloadObjectAsJSON(json, 'classifications.{{-dataset_id-}}.' + time_tag)
+                            downloadObjectAsJSON(json, '{{-dataset_id-}}.' + time_tag)
                         }
                     }
                 });
