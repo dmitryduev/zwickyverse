@@ -709,6 +709,22 @@ def projects(project_id=None):
                             # TODO:
                             remove_class = flask.request.json.get('remove_class', None)
 
+                            edit_name = flask.request.json.get('name', None)
+                            edit_description = flask.request.json.get('description', None)
+
+                            # editing project metadata?
+                            if (edit_name is not None) and (edit_description is not None):
+                                if (len(edit_name) == 0) or (len(edit_description) == 0):
+                                    return 'all fields are compulsory'
+
+                                # edit in db:
+                                project_id = mongo.db.projects.update_one(
+                                    {'_id': ObjectId(project_id)},
+                                    {'$set': {'name': edit_name,
+                                              'description': edit_description,
+                                              'last_modified': datetime.datetime.now()}}
+                                )
+
                             # adding class(es)?
                             if add_classes is not None:
 

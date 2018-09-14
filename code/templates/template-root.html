@@ -53,7 +53,8 @@
                         {% if project['role'] == 'admin' %}
                             <button type="button" class="btn btn-sm btn-outline-primary"
                                     data-toggle="modal" data-target="#editProjectModal"
-                                    data-user="{{-user-}}">
+                                    data-user="{{-user-}}" data-projectid="{{-project_id-}}"
+                                    data-name="{{-project['name']-}}" data-description="{{-project['description']-}}">
                                 edit</button>
                             <button type="button" class="btn btn-sm btn-outline-danger removeProjectButton"
                                     data-projectid="{{-project_id-}}">
@@ -238,8 +239,8 @@
                                    name="name" autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label for="form-name">Project description</label>
-                            <input id="form-name" type="text" class="form-control"
+                            <label for="form-description">Project description</label>
+                            <input id="form-description" type="text" class="form-control"
                                    name="description" autocomplete="off">
                         </div>
                         <div class="form-group">
@@ -252,6 +253,47 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" id="addProjectButton">Save</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    <!-- End Modal -->
+
+    <!-- Edit Project Metadata Modal -->
+    <div class="modal fade" tabindex="-1" role="dialog" id="editProjectModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit project metadata</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editProject">
+                        <div class="form-group">
+                            <input id="form-projectid" type="hidden" class="form-control"
+                               name="project_id" autocomplete="off">
+
+                            <label for="form-name">Project name</label>
+                            <input id="form-name" type="text" class="form-control"
+                                   name="name" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="form-description">Project description</label>
+                            <input id="form-description" type="text" class="form-control"
+                                   name="description" autocomplete="off">
+                        </div>
+{#                        <div class="form-group">#}
+{#                            <label for="form-classes">Classes</label>#}
+{#                            <input id="form-classes" type="text" class="form-control" placeholder="class1 class2 ..."#}
+{#                                   name="classes" autocomplete="off">#}
+{#                        </div>#}
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="editProjectButton">Save</button>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
@@ -508,6 +550,21 @@
             modal.find("#form-projectid").val(projectid);
         });
 
+        $('#editProjectModal').on('show.bs.modal', function (event) {
+            var trigger = $(event.relatedTarget); // Who triggered the modal? [to extract info]
+            // Extract info from data-* attributes
+            var projectid = trigger.data('projectid');
+            var project_name = trigger.data('name');
+            var project_description = trigger.data('description');
+
+            var modal = $(this);
+            modal.find("#form-projectid").val(projectid);
+            modal.find("#form-name").val(project_name);
+            modal.find("#form-description").val(project_description);
+        });
+
+
+
         // add project
         $('#addProjectButton').click(function (e) {
             $.ajax({url: '{{-script_root-}}/projects',
@@ -526,6 +583,31 @@
                 },
                 error: function(data) {
                     $('#addProjectModal').modal('hide');
+                    showFlashingMessage('Info:', data, 'danger');
+                }
+            });
+            return false;
+        });
+
+        // edit project
+        $('#editProjectButton').click(function (e) {
+            var projectid = $('#editProject').serializeJSON()['project_id'];
+            $.ajax({url: '{{-script_root-}}/projects/' + projectid,
+                method: 'POST',
+                data: JSON.stringify($('#editProject').serializeJSON()),
+                processData: false,
+                contentType: 'application/json',
+                success: function(data) {
+                    if (data === 'success') {
+                        location.reload(true);
+                    }
+                    else {
+                        $('#editProjectModal').modal('hide');
+                        showFlashingMessage('Info:', data, 'danger');
+                    }
+                },
+                error: function(data) {
+                    $('#editProjectModal').modal('hide');
                     showFlashingMessage('Info:', data, 'danger');
                 }
             });
