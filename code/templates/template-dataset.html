@@ -5,91 +5,54 @@
 {% endblock %}
 
 {% block body %}
-
-    <div class="container">
+    <div class="container-fluid mt-2">
         <div class="row">
             <div class="col-12">
                 <h3>Dataset:&nbsp; {{-dataset['name']-}}</h3>
                 <h5>id:&nbsp; {{-dataset['_id'] | string-}}</h5>
                 <p>{{-dataset['description']-}}</p>
-                <hr>
             </div>
         </div>
-        <div class="row">
-            <div class="col-2">
+    </div>
+
+    <div class="container-fluid">
+
+{#    {% if classifications | length > 0 %}#}
+        <div id="toolbar">
+            <div class="btn-group">
+{#                <button type="button" class="btn btn-outline-dark"#}
+{#                        style="cursor: pointer;" onclick="toggle_expansion()"#}
+{#                        data-toggle="tooltip" data-placement="top" title="Show/hide more">#}
+{#                    <i id="expansion_toggle" class="fas fa-plus" aria-hidden="true"></i>#}
+{#                </button>#}
+
                 <button type="button" class="btn btn-outline-dark"
                         style="cursor: pointer;" onclick="toggle_invert_cutouts()"
                         data-toggle="tooltip" data-placement="top" title="Invert cutout colors">
                     <i id="expansion_toggle" class="fas fa-adjust" aria-hidden="true"></i>
                 </button>
+
+                <button type="button" class="btn btn-outline-dark"
+                        style="cursor: pointer;" onclick="shuffle_rows()"
+                        data-toggle="tooltip" data-placement="top" title="Shuffle rows">
+                    <i id="expansion_toggle" class="fas fa-random" aria-hidden="true"></i>
+                </button>
+
+                <button type="button" class="btn btn-outline-dark" id="save"
+                        style="cursor: pointer;"
+                        data-toggle="tooltip" data-placement="top" title="Save">
+                    <i id="expansion_toggle" class="fas fa-save" aria-hidden="true"></i>
+                </button>
+
+                <button type="button" class="btn btn-outline-dark" id="download"
+                        style="cursor: pointer;"
+                        data-toggle="tooltip" data-placement="top" title="Download current page as JSON">
+                    <i id="expansion_toggle" class="fas fa-download" aria-hidden="true"></i>
+                </button>
             </div>
-            <div class="col-10">
-                <label for="previewImageSize">Preview image size</label>
-                <input type="range" class="custom-range" min="0.25" max="3" step="0.25" id="previewImageSize">
-            </div>
-        </div>
 
-        <div class="row">
-            <div class="col-12">
-                <hr>
-            </div>
-        </div>
-
-        <form id="cutouts_form" class="form mt-3" method="post">
-            {% for objz in classifications %}
-                {% for obj in objz %}
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <b>{{obj}}</b>
-                        </div>
-                        <div class="col-md-8">
-                            <img src="/data/datasets/{{-dataset_id-}}/{{obj}}" class="preview-img"
-                                 style="max-width: 100%;">
-                        </div>
-                        <div class="col-md-4">
-                            {% for class in classes %}
-                                <div class="form-check">
-                                  <input class="form-check-input" type="checkbox" data-id="{{-obj-}}"
-                                         value="{{-class-}}"{% if class in objz[obj] %} checked="checked"{% endif %}>
-                                  <label class="form-check-label" for="{{-obj-}}_{{-class-}}">
-                                      {{ class }}{%-if inspect-%}: {{ objz[obj].count(class) }}{%-endif-%}
-                                  </label>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <hr>
-                {% endfor %}
-            {% endfor %}
-
-        </form>
-
-        <div class="row">
-            <div class="col-12">
-                <div class="form-group row">
-                    <button type="button" class="btn btn-dark btn-sm" id="save">Save</button>&nbsp;&nbsp;
-                    <button type="button" class="btn btn-dark btn-sm" id="download">Download JSON</button>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="container-fluid">
-
-    {% if classifications | length > 0 %}
-        <div id="toolbar" class="btn-group">
-{#            <button type="button" class="btn btn-outline-dark"#}
-{#                    style="cursor: pointer;" onclick="toggle_expansion()"#}
-{#                    data-toggle="tooltip" data-placement="top" title="Show/hide more">#}
-{#                <i id="expansion_toggle" class="fas fa-plus" aria-hidden="true"></i>#}
-{#            </button>#}
-
-            <button type="button" class="btn btn-outline-dark"
-                    style="cursor: pointer;" onclick="toggle_invert_cutouts()"
-                    data-toggle="tooltip" data-placement="top" title="Invert cutout colors">
-                <i id="expansion_toggle" class="fas fa-adjust" aria-hidden="true"></i>
-            </button>
+{#            <label for="previewImageSize" class="text-center">Preview image size</label>#}
+            <input type="range" style="width: 150px" class="custom-range" min="0.25" max="2.5" step="0.25" id="previewImageSize">
 
         </div>
         <table id="table"
@@ -102,7 +65,7 @@
                data-page-size="20"
                data-page-list="[20, 50, 100, 200, 500, All]"
                data-search="true"
-               data-detail-view="true"
+               data-detail-view="false"
                data-detail-formatter="detailFormatter"
                data-show-columns="true"
                data-show-multi-sort="true"
@@ -112,7 +75,7 @@
                                       "worksheetName": "classifications"
                                      }'>
         </table>
-    {% endif %}
+{#    {% endif %}#}
     </div>
 
 {% endblock %}
@@ -129,7 +92,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 
     <script>
-        {% if classifications | length > 0 %}
+{#        {% if classifications | length > 0 %}#}
         // Fancy table stuff
         function getHeight() {
             var window_height = $(window).height();
@@ -145,232 +108,45 @@
             }
         }
 
-        var jd = new JulianDate();
-
         // build table using js
         $('#table').bootstrapTable({
             height: getHeight(),
             columns: [
                 [
                     {
-                        field: 'obs_date',
-                        title: 'T_obs, UTC',
-                        rowspan: 2,
+                        field: 'object',
+                        title: 'Object',
                         align: 'center',
                         valign: 'middle',
                         sortable: true,
                         visible: true
                     },
+                    {% for class in classes %}
                     {
-                        field: 'objectId',
-                        title: 'objectId',
-                        rowspan: 2,
+                        field: '{{-class-}}',
+                        title: '{{-class-}}',
                         align: 'center',
                         valign: 'middle',
-                        sortable: true
+                        sortable: false,
+                        sorter: checkboxSorter,
+                        visible: true
                     },
-                    {
-                        field: 'candid',
-                        title: 'candid',
-                        rowspan: 2,
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true
-                    },
-
-                    {
-                        field: 'wd_name',
-                        title: 'name',
-                        rowspan: 2,
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true
-                    },
-                    {
-                        field: 'wd_pwd',
-                        title: 'pwd',
-                        rowspan: 2,
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true
-                    },
-                    {
-                        field: 'wd_gaia_dr2_id',
-                        title: 'Gaia DR2 ID',
-                        rowspan: 2,
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true,
-                        visible: false
-                    },
-                    {
-                        field: 'wd_ra',
-                        title: 'R.A.',
-                        rowspan: 2,
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true,
-                        visible: false
-                    },
-                    {
-                        field: 'wd_dec',
-                        title: 'Decl.',
-                        rowspan: 2,
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true,
-                        visible: false
-                    },
-                    {
-                        field: 'wd_parallax',
-                        title: 'Gaia parallax',
-                        rowspan: 2,
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true,
-                        visible: false
-                    },
-                    {
-                        field: 'wd_phot_g_mean_mag',
-                        title: 'Gaia mag',
-                        rowspan: 2,
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true
-                    },
-                    {
-                        field: 'wd_l',
-                        title: 'l',
-                        rowspan: 2,
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true,
-                        visible: false
-                    },
-                    {
-                        field: 'wd_b',
-                        title: 'b',
-                        rowspan: 2,
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true,
-                        visible: false
-                    },
-                    {
-                        field: 'wd_SDSS_name',
-                        title: 'SDSS_name',
-                        rowspan: 2,
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true,
-                        visible: false
-                    },
-                    {
-                        field: 'wd_Teff',
-                        title: 'Teff',
-                        rowspan: 2,
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true,
-                        visible: false
-                    },
-
-                    {
-                        field: 'candidate',
-                        title: 'candidate',
-                        colspan: 7,
-                        align: 'center',
-                        valign: 'middle'
-                    }
-                ],
-
-                [
-                    {
-                        field: 'programid',
-                        title: 'programid',
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true,
-                        visible: false
-                    },
-                    {
-                        field: 'fid',
-                        title: 'fid',
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true
-                    },
-                    {
-                        field: 'rb',
-                        title: 'rb',
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true
-                    },
-                    {
-                        field: 'magpsf',
-                        title: 'magpsf',
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true
-                    },
-                    {
-                        field: 'sigmapsf',
-                        title: 'sigmapsf',
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true
-                    },
-                    {
-                        field: 'ra',
-                        title: 'R.A.',
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true
-                    },
-                    {
-                        field: 'dec',
-                        title: 'Decl.',
-                        align: 'center',
-                        valign: 'middle',
-                        sortable: true
-                    },
-
+                    {% endfor %}
                 ]
             ],
             data: [
-                {% for alert in alerts %}
-                   {% set candid = alert['candid'] %}
-                   {% set objectId = alert['objectId'] %}
+                {% for objz in classifications %}
+                {% for obj in objz %}
                     {
-                        objectId: "{{objectId}}",
-                        candid: "{{candid}}",
-
-                        obs_date: moment(jd.julian({{ alert['candidate']['jd'] }}).getDate()).utc().format('YYYY/MM/DD_HH:mm:ss'),
-                        {#obs_date: moment(jd.julian({{ alert['candidate']['jd'] }}).getDate()).utc().format('YYYY/MM/DD_HH:mm:ss') + "__{{ alert['candidate']['jd'] }}",#}
-
-                        ra: "{{ alert['coordinates']['radec_str'][0] }}",
-                        dec: "{{ alert['coordinates']['radec_str'][1] }}",
-
-                        wd_name: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['White_dwarf_name']}}",
-                        wd_pwd: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['Pwd']}}".slice(0, 4),
-                        wd_gaia_dr2_id: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['source_id']}}",
-                        wd_ra: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['coordinates']['radec_str'][0]}}",
-                        wd_dec: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['coordinates']['radec_str'][1]}}",
-                        wd_parallax: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['parallax']}}".slice(0, 4),
-                        wd_phot_g_mean_mag: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['phot_g_mean_mag']}}".slice(0, 8),
-                        wd_l: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['l']}}",
-                        wd_b: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['b']}}",
-                        wd_SDSS_name: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['SDSS_name']}}",
-                        wd_Teff: "{{alert['xmatch']['nearest_within_5_arcsec']['Gaia_DR2_WD']['Teff']}}",
-
-
-                        programid: "{{alert['candidate']['programid']}}",
-                        fid: "{{alert['candidate']['fid']}}",
-                        rb: "{{alert['candidate']['rb']}}".slice(0, 4),
-                        magpsf: "{{alert['candidate']['magpsf']}}".slice(0, 5),
-                        sigmapsf: "{{alert['candidate']['sigmapsf']}}".slice(0, 4)
+                        "object": "<b>{{-obj-}}</b><br><img src='/data/datasets/{{-dataset_id-}}/{{obj}}' class='preview-img' style='max-width: 100%;'>",
+                        {% for class in classes %}
+                            "{{-class-}}": "<div class='form-check'>"+
+                                "<input class='' style='font-size: 1.5rem;' type='checkbox' id='{{-obj-}}_{{-class-}}' data-id='{{-obj-}}' value='{{-class-}}'{% if class in objz[obj] %} checked='checked'{% endif %}>"+
+                                {#"<label class='form-check-label' for='{{-obj-}}_{{-class-}}'>{{ class }}{%-if inspect-%}: {{ objz[obj].count(class) }}{%-endif-%}</label>"+#}
+                                "</div>",
+                        {% endfor %}
                     },
+                {% endfor %}
                 {% endfor %}
             ]
         });
@@ -473,6 +249,23 @@
             return 0;
         }
 
+        function checkboxSorter(a, b) {
+            // FIXME: this sorting "resets" checkbox states to initial values
+            let dom_nodes_a = $($.parseHTML(a));
+            let chbx_a_id = dom_nodes_a.find('input').attr('id');
+            {#console.log(a);#}
+            {#console.log(chbx_a_id);#}
+            let chbx_a_checked = document.getElementById(chbx_a_id).checked;
+            let dom_nodes_b = $($.parseHTML(b));
+            let chbx_b_id = dom_nodes_b.find('input').attr('id');
+            let chbx_b_checked = document.getElementById(chbx_b_id).checked;
+            {#console.log(chbx_a_checked);#}
+            {#console.log(chbx_b_checked);#}
+            if (chbx_a_checked && !chbx_b_checked) return 1;
+            if (!chbx_a_checked && chbx_b_checked) return -1;
+            return 0;
+        }
+
         {# expand all rows in table #}
         function toggle_expansion(){
             if ($("#expansion_toggle").hasClass('fa-plus')) {
@@ -486,7 +279,12 @@
 
         {# toggle cutout color invert #}
         function toggle_invert_cutouts(){
-            $('.cutout').toggleClass('invert');
+            $('.preview-img').toggleClass('invert');
+        }
+
+        {# shuffle rows #}
+        function shuffle_rows(){
+            alert('Not implemented yet')
         }
 
 
@@ -512,18 +310,25 @@
             }, 100);
         }
 
-        {% endif %}
+{#        {% endif %}#}
     </script>
 
     <script>
-        var height = $(".preview-img").first().height();
+        var height = 100;
+        $(document).ready(function() {
+            height = $(".preview-img").first().height();
+            {#console.log(height);#}
+        });
         $(document).ready(function() {
             $("#previewImageSize").val(1);
         });
 
-        $("#previewImageSize").change(function() {
-            {#console.log($(this).val());#}
-            $(".preview-img").css('height', height * $(this).val());
+        $(document).ready(function() {
+            $("#previewImageSize").change(function () {
+                {#console.log(height);#}
+                {#console.log($(this).val());#}
+                $(".preview-img").css('height', height * $(this).val());
+            });
         });
 
         {# toggle cutout color invert #}
@@ -575,7 +380,6 @@
                         // confirmed?
                         if (result) {
                             let json = construct_json();
-                            {#$('#cutouts_form').submit();#}
                             $.ajax({
                                 type: "POST",
                                 url: '/projects/{{-project_id-}}/datasets/{{-dataset_id-}}/classify',
