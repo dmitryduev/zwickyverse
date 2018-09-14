@@ -70,3 +70,12 @@ docker run -it --rm --name zwickyverse -p 8000:4000 -v zwickyverse-volume:/data 
 ```
 
 The service will be available on port 8000 of the `Docker` host machine
+
+
+### Screenshots
+
+![](doc/screenshot01.png)
+![](doc/screenshot02.png)
+![](doc/screenshot03.png)
+![](doc/screenshot04.png)
+
