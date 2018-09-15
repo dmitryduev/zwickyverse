@@ -51,7 +51,7 @@
 
                 <button type="button" class="btn btn-outline-dark" id="download"
                         style="cursor: pointer;"
-                        data-toggle="tooltip" data-placement="top" title="Download current page as JSON">
+                        data-toggle="tooltip" data-placement="top" title="Download as JSON">
                     <i id="expansion_toggle" class="fas fa-download" aria-hidden="true"></i>
                 </button>
             </div>
@@ -364,15 +364,7 @@
                     console.log(key);
                     {#console.log(key, table_data[key]);#}
                     {% for class in classes %}
-                        {#console.log(table_data[key]['{{-class-}}']);#}
-                        {#let dom_nodes_{{-class-}} = $($.parseHTML(table_data[key]['{{-class-}}']));#}
-                        {#var dom_nodes_{{-class-}} = $(table_data[key]['{{-class-}}']);#}
-                        {#var chbx_id_{{-class-}} = dom_nodes_{{-class-}}.find('input').attr('id');#}
-                        {#var chbx_checked_{{-class-}} = document.getElementById(chbx_id_{{-class-}}).checked;#}
                         if (table_data[key]['{{-class-}}'].includes('checked')) {
-                            {#var object_id_{{-class-}} = dom_nodes_{{-class-}}.find('input').attr('data-id');#}
-                            {#console.log(table_data[key]['{{-class-}}']);#}
-                            {#match = regex_id.exec(table_data[key]['{{-class-}}']);#}
                             match = table_data[key]['{{-class-}}'].match(regex_id);
                             object_id = match[1];
                             if (!json.hasOwnProperty(object_id)) {
