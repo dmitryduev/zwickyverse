@@ -1058,6 +1058,7 @@ def datasets_classify(project_id, dataset_id):
 
             if _tmp is not None and len(_tmp) > 0:
                 classifications = json.loads(flask.request.get_data())
+                print(classifications)
                 classifications = {k: v for k, v in classifications.items() if len(v) > 0}
 
                 # dump to db:

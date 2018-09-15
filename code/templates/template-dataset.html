@@ -2,6 +2,11 @@
 
 {% block css %}
     <link rel="stylesheet" href="{{-script_root-}}/static/css/bootstrap-table.css">
+    <style>
+        .preview-img {
+            max-width: 100%;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
@@ -141,7 +146,7 @@
                         "object": "<b>{{-obj-}}</b><br><img src='/data/datasets/{{-dataset_id-}}/{{obj}}' class='preview-img' style='max-width: 100%;'>",
                         {% for class in classes %}
                             "{{-class-}}": "<div class='form-check'>"+
-                                "<input class='' style='font-size: 1.5rem;' type='checkbox' id='{{-obj-}}_{{-class-}}' data-id='{{-obj-}}' value='{{-class-}}'{% if class in objz[obj] %} checked='checked'{% endif %}>{%-if inspect-%}: {{ objz[obj].count(class) }}{%-endif-%}"+
+                                "<input onclick='checkbox(\"{{-obj-}}_{{-class-}}\")' class='label-checkbox' style='font-size: 1.5rem;' type='checkbox' id='{{-obj-}}_{{-class-}}' data-id='{{-obj-}}' value='{{-class-}}'{% if class in objz[obj] %} checked='checked'{% endif %}>{%-if inspect-%}: {{ objz[obj].count(class) }}{%-endif-%}"+
                                 {#"<label class='form-check-label' for='{{-obj-}}_{{-class-}}'>{{ class }}{%-if inspect-%}: {{ objz[obj].count(class) }}{%-endif-%}</label>"+#}
                                 "</div>",
                         {% endfor %}
@@ -348,17 +353,40 @@
 
         function construct_json() {
             var json = {};
-            $("input:checkbox").each(function() {
-                if ( $(this).is(":checked") ) {
-                    {#alert($(this).val());#}
-                    if (!json.hasOwnProperty($(this).data("id"))) {
-                        json[$(this).data("id")] = [$(this).val()];
-                    }
-                    else {
-                        json[$(this).data("id")].push($(this).val());
-                    }
+            var regex_id = /data-id=['"](.*?)['"]/;
+            var match = '';
+            var object_id = '';
+
+            let table_data = $('#table').bootstrapTable('getData');
+            console.log(table_data);
+            for (var key in table_data){
+                if (table_data.hasOwnProperty(key)) {
+                    console.log(key);
+                    {#console.log(key, table_data[key]);#}
+                    {% for class in classes %}
+                        {#console.log(table_data[key]['{{-class-}}']);#}
+                        {#let dom_nodes_{{-class-}} = $($.parseHTML(table_data[key]['{{-class-}}']));#}
+                        {#var dom_nodes_{{-class-}} = $(table_data[key]['{{-class-}}']);#}
+                        {#var chbx_id_{{-class-}} = dom_nodes_{{-class-}}.find('input').attr('id');#}
+                        {#var chbx_checked_{{-class-}} = document.getElementById(chbx_id_{{-class-}}).checked;#}
+                        if (table_data[key]['{{-class-}}'].includes('checked')) {
+                            {#var object_id_{{-class-}} = dom_nodes_{{-class-}}.find('input').attr('data-id');#}
+                            {#console.log(table_data[key]['{{-class-}}']);#}
+                            {#match = regex_id.exec(table_data[key]['{{-class-}}']);#}
+                            match = table_data[key]['{{-class-}}'].match(regex_id);
+                            object_id = match[1];
+                            if (!json.hasOwnProperty(object_id)) {
+                                json[object_id] = ['{{-class-}}'];
+                            }
+                            else {
+                                json[object_id].push('{{-class-}}');
+                            }
+                        }
+                    {% endfor %}
                 }
-            });
+            }
+
+            {#console.log(json);#}
             return json;
         }
 
@@ -427,5 +455,31 @@
                 });
             });
         });
+
+        function checkbox(c_id){
+            if (document.getElementById(c_id).getAttribute('data-id') !== null) {
+                {#console.log(document.getElementById(c_id).checked);#}
+                {#console.log(document.getElementById(c_id).closest('div'));#}
+                {#console.log(document.getElementById(c_id).getAttribute('value'));#}
+                {#console.log(document.getElementById(c_id).closest('tr').getAttribute('data-index'));#}
+
+                let row_index = document.getElementById(c_id).closest('tr').getAttribute('data-index');
+                let cls = document.getElementById(c_id).getAttribute('value');
+                let cont = document.getElementById(c_id).closest('div');
+                if (document.getElementById(c_id).checked) {
+                    cont.getElementsByTagName("input")[0].setAttribute("checked", "checked");
+                }
+                else {
+                    cont.getElementsByTagName("input")[0].removeAttribute("checked");
+                }
+                {#console.log(cont.outerHTML);#}
+
+                $('#table').data()['bootstrap.table']['data'][row_index][cls] = cont.outerHTML;
+            }
+
+        }
+
+        {#    // $('#table').data()['bootstrap.table']['data']#}
+
     </script>
 {% endblock %}
