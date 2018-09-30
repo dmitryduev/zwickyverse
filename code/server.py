@@ -571,28 +571,37 @@ def projects(project_id=None):
                 # download dataset as archive:
                 download = flask.request.args.get('download', None, str)
                 if download is not None:
-                    if download == 'meta':
-                        project_doc = mongo.db.projects.find_one({'_id': ObjectId(project_id)})
 
-                        if project_doc is not None and len(project_doc) > 0:
+                    _tmp = mongo.db.projects.find_one({'_id': ObjectId(project_id)})
+                    # print(_tmp)
 
-                            time_tag = utc_now().strftime('%Y%m%d_%H%M%S') + 'Z'
+                    if _tmp is not None and len(_tmp) > 0:
+                        # check user is admin for the project:
+                        permissions = mongo.db.users.find_one({'_id': user_id}, {'_id': 0, 'permissions': 1})[
+                            'permissions']
+                        if project_id in permissions:
+                            if download == 'meta':
+                                project_doc = mongo.db.projects.find_one({'_id': ObjectId(project_id)})
 
-                            project = {'_id': str(project_doc['_id']),
-                                       'classes': project_doc['classes'],
-                                       'datasets': list(project_doc['datasets'].keys()),
-                                       'created': time_tag}
+                                if project_doc is not None and len(project_doc) > 0:
 
-                            response = flask.jsonify(project)
+                                    time_tag = utc_now().strftime('%Y%m%d_%H%M%S') + 'Z'
 
-                            response.headers['Content-Disposition'] = f'attachment;filename={project_id}.json'
+                                    project = {'_id': str(project_doc['_id']),
+                                               'classes': project_doc['classes'],
+                                               'datasets': list(project_doc['datasets'].keys()),
+                                               'created': time_tag}
 
-                            return response
+                                    response = flask.jsonify(project)
 
-                        else:
-                            return f'project {project_id} not found', 500
-                    else:
-                        return 'unknown format', 500
+                                    response.headers['Content-Disposition'] = f'attachment;filename={project_id}.json'
+
+                                    return response
+
+                                else:
+                                    return f'project {project_id} not found', 500
+                            else:
+                                return 'unknown format', 500
 
                 # display single project
                 return flask.redirect(flask.url_for('root'))
