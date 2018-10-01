@@ -577,8 +577,8 @@ def projects(project_id=None):
 
                     if _tmp is not None and len(_tmp) > 0:
                         # check user is admin for the project:
-                        permissions = mongo.db.users.find_one({'_id': user_id}, {'_id': 0, 'permissions': 1})[
-                            'permissions']
+                        permissions = mongo.db.users.find_one({'_id': user_id},
+                                                              {'_id': 0, 'permissions': 1})['permissions']
                         if project_id in permissions:
                             if download == 'meta':
                                 project_doc = mongo.db.projects.find_one({'_id': ObjectId(project_id)})
