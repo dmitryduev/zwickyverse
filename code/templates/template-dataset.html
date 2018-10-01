@@ -323,6 +323,9 @@
         var height = 100;
         $(document).ready(function() {
             height = $(".preview-img").first().height();
+            if (height === 0) {
+                height = 100;
+            }
             {#console.log(height);#}
         });
         $(document).ready(function() {
