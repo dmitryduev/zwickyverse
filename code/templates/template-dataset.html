@@ -144,7 +144,7 @@
                 {% for objz in classifications %}
                 {% for obj in objz %}
                     {
-                        "object": "<b>{{-obj-}}</b><br><img src='/data/datasets/{{-dataset_id-}}/{{obj}}' class='preview-img'>",
+                        "object": "<b>{{-obj-}}</b><br><img src='/data/datasets/{{-dataset_id-}}/{{obj}}' class='preview-img' style='max-width: 800px;'>",
                         {% for class in classes %}
                             "{{-class-}}": "<div class='form-check'>"+
                                 "<input onclick='checkbox(\"{{-obj-}}_{{-class-}}\")' class='label-checkbox' style='font-size: 1.5rem;' type='checkbox' id='{{-obj-}}_{{-class-}}' data-id='{{-obj-}}' value='{{-class-}}'{% if class in objz[obj] %} checked='checked'{% endif %}>{%-if inspect-%}: {{ objz[obj].count(class) }}{%-endif-%}"+
