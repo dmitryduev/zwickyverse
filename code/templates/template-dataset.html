@@ -60,6 +60,12 @@
 {#            <label for="previewImageSize" class="text-center">Preview image size</label>#}
             <input type="range" style="width: 150px" class="custom-range" min="0.25" max="2.5" step="0.25" id="previewImageSize">
 
+            {# TODO: autosave toggle #}
+            <span class="switch">
+                <input type="checkbox" class="switch" id="switch-sm" checked>
+                <label for="switch-sm">Autosave</label>
+            </span>
+
         </div>
         <table id="table"
                class="table table-hover table-condensed"
@@ -424,6 +430,31 @@
                     }
                 });
             });
+        });
+
+        // autosave classifications every minute
+        $(document).ready(function() {
+            setInterval(function () {
+                if (document.getElementById("switch-sm").checked) {
+                    let json = construct_json();
+                    $.ajax({
+                        type: "POST",
+                        url: '/projects/{{-project_id-}}/datasets/{{-dataset_id-}}/classify',
+                        data: JSON.stringify(json),
+                        success: function(data) {
+                            if (data === 'success') {
+                                showFlashingMessage('Info:', data, 'success');
+                            }
+                            else {
+                                showFlashingMessage('Info:', data, 'danger');
+                            }
+                        },
+                        error: function(data) {
+                            showFlashingMessage('Info:', data, 'danger');
+                        }
+                    });
+                }
+            }, 60 * 1000); // 60 * 1000 milli seconds
         });
 
         // download classifications as JSON
