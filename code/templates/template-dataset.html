@@ -343,6 +343,9 @@
                 {#console.log(height);#}
                 {#console.log($(this).val());#}
                 $(".preview-img").css('height', height * $(this).val());
+                if( $('#table').length ) {
+                    resetTableHeight();
+                }
             });
         });
 
