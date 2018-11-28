@@ -5,6 +5,14 @@
     {{ dropzone.style('border: 2px dashed #0087F7; margin: 10px 0 10px; min-height: 300px; width: 100%') }}
 
     <style>
+    {% if projects == None %}
+    html {
+        height: 100% !important;
+    }
+    body {
+        height: 90% !important;
+    }
+    {% endif %}
     .dropzone .dz-preview .dz-image {
         width: 80px;
         height: 80px;
@@ -19,7 +27,7 @@
 {% block body_top %}
     {# only display for non logged-in users #}
     {% if projects == None %}
-    <div class="container h-100">
+    <div class="container align-items-center">
         <div class="row justify-content-center align-items-center">
             <div class="col-4">
                 <img class="align-self-start mr-5" style="width: 200px;"
