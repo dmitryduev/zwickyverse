@@ -18,23 +18,21 @@
 
 {% block body_top %}
     {# only display for non logged-in users #}
-{#    {% if projects == None %}#}
-    <div class="container-fluid m-0 p-0">
-        <div class="jumbotron m-0 p-3 p-md-5 text-dark bg-light">
-            <div class="col-md-auto align-self-center px-0">
-                <div class="media">
-                    <img class="align-self-start mr-5" style="width: 200px;"
-                         src="{{-script_root-}}/static/img/ZTF_CompactGrayLB.png"
-                         alt="Zwicky Transient Facility">
-                    <div class="media-body">
-                        <h2 class="mt-0">Zwickyverse</h2>
-                        <p style="font-size: 1.2rem;">Simplifying data-set labeling for ZTF machine learning activities</p>
-                    </div>
-                </div>
+    {% if projects == None %}
+    <div class="container h-100">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-4">
+                <img class="align-self-start mr-5" style="width: 200px;"
+                     src="{{-script_root-}}/static/img/ZTF_CompactGrayLB.png"
+                     alt="Zwicky Transient Facility">
+            </div>
+            <div class="col-4">
+                <h2 class="mt-0">Zwickyverse</h2>
+                <p style="font-size: 1.2rem;">Simplifying data-set labeling for ZTF machine learning activities</p>
             </div>
         </div>
     </div>
-{#    {% endif %}#}
+    {% endif %}
 {% endblock %}
 
 {% block body %}

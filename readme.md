@@ -63,7 +63,7 @@ docker run -d --restart always --name zwickyverse-mongo -p 27020:27017 -v zwicky
 
 Build and launch the main container:
 ```bash
-docker build -t zwickyverse:latest -f Dockerfile .
+docker build --rm -t zwickyverse:latest -f Dockerfile .
 docker run --name zwickyverse -d --restart always -p 8000:4000 -v zwickyverse-volume:/data --link zwickyverse-mongo:mongo zwickyverse:latest
 # test mode:
 docker run -it --rm --name zwickyverse -p 8000:4000 -v zwickyverse-volume:/data --link zwickyverse-mongo:mongo zwickyverse:latest

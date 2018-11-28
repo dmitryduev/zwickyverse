@@ -4,15 +4,20 @@ html {
     font-weight: lighter !important;
 }
 body {
+    display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
     /*font-family: 'Roboto', sans-serif !important;*/
     /*padding-top: 2.2rem;*/
     padding-top: 2.9rem;
     /*!*font-size: 0.9rem;*!*/
     font-size: 0.9rem;
     /*font-weight: 300;*/
-    font-weight: lighter !important;
+    font-weight: 400 !important;
     /* Margin bottom by footer height */
     margin-bottom: 50px;
+    /*height: 100%;*/
 }
 pre {
     background-color: #f8f9fa;
@@ -23,6 +28,8 @@ code {
 }
 .navbar {
     padding: 0.2rem 2rem !important;
+    background-color: #213d46 !important;
+    /*background-color: #343a40 !important;*/
 }
 
 .footer {
