@@ -557,6 +557,22 @@ def root():
                                  user=user_id)
 
 
+@app.route('/docs', methods=['GET'])
+@flask_login.login_required
+def docs():
+    """
+
+    :return:
+    """
+
+    ''' web endpoint: home page '''
+    user_id = str(flask_login.current_user.id)
+
+    return flask.render_template('template-docs.html',
+                                 logo=config['server']['logo'],
+                                 user=user_id)
+
+
 ''' Projects API '''
 
 
