@@ -17,29 +17,24 @@ pip install git+https://github.com/dmitryduev/zwickyverse.git
 
 #### Quick start
 
-Now you can import the library in your script:
+Define your server info and the access credentials and connect to it:
 
 ```python
 from zwickyverse import Private
-```
 
-Define your access credentials:
-
-```python
+protocol = 'https'
+host = 'private.caltech.edu'
+port = 443
 username = 'YOUR_USERNAME'
 password = 'YOUR_PASSWORD'
+
+p = Private(protocol=protocol, host=host, port=port, username=username, password=password, verbose=False)
 ```
 
-Connect to `private`:
+<span class="badge badge-secondary">Note</span> `Private` object is a context manager, so can be used with a `with` statement:
 
 ```python
-k = Private(username=username, password=password, verbose=False)
-```
-
-<span class="badge badge-secondary">Note</span> `Kowalski` object is a context manager, so can be used with a `with` statement:
-
-```python
-with Private(username=username, password=password, verbose=False) as k:
+with Private(protocol=protocol, host=host, port=port, username=username, password=password) as p:
     # do stuff
     pass
 ```
