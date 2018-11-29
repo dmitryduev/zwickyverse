@@ -90,23 +90,43 @@ class Private(object):
             msg = resp['message'] if 'message' in resp else 'unknown error'
             raise Exception(f'Authentication error: {msg}')
 
-    def get_project(self, progect_id: str='all', timeout: Num=10):
+    def get_project(self, project_id: str='all', timeout: Num=10):
         """
             Get project(s) metadata
-        :param progect_id:
+        :param project_id:
         :param timeout:
         :return:
         """
 
         url = os.path.join(self.base_url, 'projects') \
-            if progect_id == 'all' else os.path.join(self.base_url, 'projects', progect_id)
+            if project_id == 'all' else os.path.join(self.base_url, 'projects', project_id)
         resp = self.session.get(url=url, params={'download': 'json'}, timeout=timeout)
 
-        print(resp.text)
+        # should return either list of projects or dict with single project
+        return resp.json()
+
+    def get_classifications(self, project_id: str='all', timeout: Num=60):
+        """
+            Get project(s) metadata
+        :param project_id:
+        :param timeout:
+        :return:
+        """
+
+        url = os.path.join(self.base_url, 'projects') \
+            if project_id == 'all' else os.path.join(self.base_url, 'projects', project_id)
+        resp = self.session.get(url=url, params={'download': 'json'}, timeout=timeout)
+
+        # should return either list of projects or dict with single project
+        return resp.json()
 
 
 if __name__ == '__main__':
 
     with Private(protocol='http', host='127.0.0.1', port=8000, username='admin', password='admin', verbose=True) as p:
 
-        p.get_project()
+        projects = p.get_project()
+        print(projects)
+
+        ztf = p.get_project(project_id='5bdbe9f13610a1000f76abca')
+        print(ztf)

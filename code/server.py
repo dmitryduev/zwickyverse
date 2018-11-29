@@ -627,7 +627,8 @@ def projects(project_id=None):
                 # print(projects)
                 # append info in place:
                 for project in projects:
-                    project_id = str(project['_id'])
+                    project['_id'] = str(project['_id'])
+                    project_id = project['_id']
                     project['role'] = user_projects[project_id]['role']
                     if project['role'] == 'admin':
                         project_users = mongo.db.users.find({f'permissions.{project_id}': {'$exists': True}},
