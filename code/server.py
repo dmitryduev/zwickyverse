@@ -22,6 +22,12 @@ import logging
 from ast import literal_eval
 import requests
 import numpy as np
+import traceback
+
+
+def jsonify(data, status=200):
+
+    return flask.Response(response=dumps(data), status=status, mimetype='application/json')
 
 
 def get_config(_config_file='/app/config.json'):
@@ -53,6 +59,8 @@ def get_config(_config_file='/app/config.json'):
 
     except Exception as _e:
         print(_e)
+        _err = traceback.format_exc()
+        print(_err)
         raise Exception('Failed to read in the config file')
 
 
@@ -102,6 +110,8 @@ def add_admin():
                                        })
         except Exception as e:
             print(e)
+            _err = traceback.format_exc()
+            print(_err)
 
 
 ''' load config '''
@@ -196,6 +206,8 @@ def request_loader(request):
 
     except Exception as _e:
         print(_e)
+        _err = traceback.format_exc()
+        print(_err)
         # return None
         return
 
@@ -237,6 +249,8 @@ def login():
             access_token = auth.json()['access_token'] if 'access_token' in auth.json() else 'FAIL'
         except Exception as e:
             print(e)
+            _err = traceback.format_exc()
+            print(_err)
             access_token = 'FAIL'
 
         user.access_token = access_token
@@ -345,6 +359,8 @@ def add_user():
 
         except Exception as _e:
             print(_e)
+            _err = traceback.format_exc()
+            print(_err)
             return str(_e)
     else:
         flask.abort(403)
@@ -411,6 +427,8 @@ def edit_user():
             return 'success'
         except Exception as _e:
             print(_e)
+            _err = traceback.format_exc()
+            print(_err)
             return str(_e)
     else:
         flask.abort(403)
@@ -436,6 +454,8 @@ def remove_user():
             return 'success'
         except Exception as _e:
             print(_e)
+            _err = traceback.format_exc()
+            print(_err)
             return str(_e)
     else:
         flask.abort(403)
@@ -450,14 +470,14 @@ def auth():
     """
     try:
         if not flask.request.is_json:
-            return flask.jsonify({"msg": "Missing JSON in request"}), 400
+            return jsonify({"msg": "Missing JSON in request"}, status=400)
 
         username = flask.request.json.get('username', None)
         password = flask.request.json.get('password', None)
         if not username:
-            return flask.jsonify({"msg": "Missing username parameter"}), 400
+            return jsonify({"msg": "Missing username parameter"}, status=400)
         if not password:
-            return flask.jsonify({"msg": "Missing password parameter"}), 400
+            return jsonify({"msg": "Missing password parameter"}, status=400)
 
         # check if username exists and passwords match
         # look up in the database first:
@@ -465,13 +485,15 @@ def auth():
         if select is not None and check_password_hash(select['password'], password):
             # Identity can be any data that is json serializable
             access_token = create_access_token(identity=username)
-            return flask.jsonify(access_token=access_token), 200
+            return jsonify({'access_token': access_token}, status=200)
         else:
-            return flask.jsonify({"msg": "Bad username or password"}), 401
+            return jsonify({"msg": "Bad username or password"}, status=401)
 
     except Exception as _e:
         print(_e)
-        return flask.jsonify({"msg": "Something unknown went wrong"}), 400
+        _err = traceback.format_exc()
+        print(_err)
+        return jsonify({"msg": "Something unknown went wrong"}, status=400)
 
 
 @app.route('/data/<path:filename>')
@@ -501,53 +523,20 @@ def stream_template(template_name, **context):
     return rv
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
+@flask_login.login_required
 def root():
-    if flask_login.current_user.is_anonymous:
-        user_id = None
-    else:
-        user_id = str(flask_login.current_user.id)
+    """
 
-    if flask.request.method == 'GET':
-        # do not display anything for the anonymous
-        if user_id is None:
-            return flask.render_template('template-root.html',
-                                         user=user_id,
-                                         logo=config['server']['logo'],
-                                         projects=None)
-        else:
-            ''' get projects for the user '''
-            user_projects = mongo.db.users.find_one({'_id': user_id}, {'_id': 0, 'permissions': 1})['permissions']
-            # fetch additional info
-            # print(user_projects)
-            projects = list(mongo.db.projects.find({'_id': {'$in': list(map(ObjectId, user_projects.keys()))}}))
-            # print(projects)
-            # append info in place:
-            for project in projects:
-                project_id = str(project['_id'])
-                project['role'] = user_projects[project_id]['role']
-                if project['role'] == 'admin':
-                    project_users = mongo.db.users.find({f'permissions.{project_id}': {'$exists': True}},
-                                                        {'_id': 1, f'permissions.{project_id}.role': 1})
-                    project['users'] = dict(ChainMap(*[{pu['_id']: pu['permissions'][f'{project_id}']}
-                                                       for pu in project_users]))
+    :return:
+    """
 
-                # datasets:
-                for dataset in project['datasets']:
-                    project['datasets'][dataset] = mongo.db.datasets.find_one({'_id': ObjectId(dataset)},
-                                                                              {'_id': 0, 'name': 1, 'description': 1})
-                    path_dataset = os.path.join(config['path']['path_data'], 'datasets', dataset)
-                    project['datasets'][dataset]['num_files'] = len(next(os.walk(path_dataset))[2]) \
-                                                                if os.path.exists(path_dataset) else 0
+    ''' web endpoint: home page '''
+    user_id = str(flask_login.current_user.id)
 
-            # print(projects)
-
-            # TODO: superusers can see and do everything
-
-            return flask.render_template('template-root.html',
-                                         logo=config['server']['logo'],
-                                         user=user_id,
-                                         projects=projects)
+    return flask.render_template('template-root.html',
+                                 logo=config['server']['logo'],
+                                 user=user_id)
 
 
 ''' Projects API '''
@@ -560,51 +549,108 @@ def projects(project_id=None):
 
     try:
         user_id = flask_login.current_user.id
+        download = flask.request.args.get('download', None, str)
 
-        ''' web endpoint '''
         if flask.request.method == 'GET':
-            # FIXME: TODO:
+
             if project_id is None:
-                # display all projects for user
-                return flask.redirect(flask.url_for('root'))
+                ''' get/display all projects '''
+                # get projects for the user
+                user_projects = mongo.db.users.find_one({'_id': user_id}, {'_id': 0, 'permissions': 1})['permissions']
+                # fetch additional info
+                # print(user_projects)
+                projects = list(mongo.db.projects.find({'_id': {'$in': list(map(ObjectId, user_projects.keys()))}}))
+                # print(projects)
+                # append info in place:
+                for project in projects:
+                    project_id = str(project['_id'])
+                    project['role'] = user_projects[project_id]['role']
+                    if project['role'] == 'admin':
+                        project_users = mongo.db.users.find({f'permissions.{project_id}': {'$exists': True}},
+                                                            {'_id': 1, f'permissions.{project_id}.role': 1})
+                        project['users'] = dict(ChainMap(*[{pu['_id']: pu['permissions'][f'{project_id}']}
+                                                           for pu in project_users]))
+
+                    # datasets:
+                    for dataset in project['datasets']:
+                        project['datasets'][dataset] = mongo.db.datasets.find_one({'_id': ObjectId(dataset)},
+                                                                                  {'_id': 0, 'name': 1,
+                                                                                   'description': 1})
+                        path_dataset = os.path.join(config['path']['path_data'], 'datasets', dataset)
+                        project['datasets'][dataset]['num_files'] = len(next(os.walk(path_dataset))[2]) \
+                            if os.path.exists(path_dataset) else 0
+
+                # print(projects)
+                if download is None:
+                    # web endpoint
+                    return flask.render_template('template-projects.html',
+                                                 logo=config['server']['logo'],
+                                                 user=user_id, projects=projects)
+                elif download == 'json':
+                    # client
+                    return jsonify(projects, status=200)
+
             else:
-                # download dataset as archive:
-                download = flask.request.args.get('download', None, str)
-                if download is not None:
+                ''' get/display single project '''
+                _tmp = mongo.db.projects.find_one({'_id': ObjectId(project_id)})
+                # print(_tmp)
 
-                    _tmp = mongo.db.projects.find_one({'_id': ObjectId(project_id)})
-                    # print(_tmp)
+                if _tmp is not None and len(_tmp) > 0:
+                    # check user has access to the project:
+                    permissions = mongo.db.users.find_one({'_id': user_id},
+                                                          {'_id': 0, 'permissions': 1})['permissions']
+                    if project_id in permissions:
+                        project_doc = mongo.db.projects.find_one({'_id': ObjectId(project_id)})
 
-                    if _tmp is not None and len(_tmp) > 0:
-                        # check user is admin for the project:
-                        permissions = mongo.db.users.find_one({'_id': user_id},
-                                                              {'_id': 0, 'permissions': 1})['permissions']
-                        if project_id in permissions:
-                            if download == 'meta':
-                                project_doc = mongo.db.projects.find_one({'_id': ObjectId(project_id)})
+                        if project_doc is not None and len(project_doc) > 0:
 
-                                if project_doc is not None and len(project_doc) > 0:
+                            time_tag = utc_now().strftime('%Y%m%d_%H%M%S') + 'Z'
 
-                                    time_tag = utc_now().strftime('%Y%m%d_%H%M%S') + 'Z'
+                            project = project_doc
 
-                                    project = {'_id': str(project_doc['_id']),
-                                               'classes': project_doc['classes'],
-                                               'datasets': list(project_doc['datasets'].keys()),
-                                               'created': time_tag}
+                            project['_id'] = str(project['_id'])
+                            project['time_tag'] = time_tag
 
-                                    response = flask.jsonify(project)
+                            project_id = project['_id']
+                            project['role'] = permissions[project_id]['role']
+                            if project['role'] == 'admin':
+                                project_users = mongo.db.users.find({f'permissions.{project_id}': {'$exists': True}},
+                                                                    {'_id': 1, f'permissions.{project_id}.role': 1})
+                                project['users'] = dict(ChainMap(*[{pu['_id']: pu['permissions'][f'{project_id}']}
+                                                                   for pu in project_users]))
 
-                                    response.headers['Content-Disposition'] = f'attachment;filename={project_id}.json'
+                            # datasets:
+                            for dataset in project['datasets']:
+                                project['datasets'][dataset] = mongo.db.datasets.find_one({'_id': ObjectId(dataset)},
+                                                                                          {'_id': 0, 'name': 1,
+                                                                                           'description': 1})
+                                path_dataset = os.path.join(config['path']['path_data'], 'datasets', dataset)
+                                project['datasets'][dataset]['num_files'] = len(next(os.walk(path_dataset))[2]) \
+                                    if os.path.exists(path_dataset) else 0
 
-                                    return response
+                            if download == 'json':
+                                # json:
+                                response = jsonify(project, status=200)
+                                response.headers['Content-Disposition'] = f'attachment;filename={project_id}.json'
+                                return response
 
-                                else:
-                                    return f'project {project_id} not found', 500
                             else:
-                                return 'unknown format', 500
-
-                # display single project
-                return flask.redirect(flask.url_for('root'))
+                                # web end-point: display single project
+                                return flask.render_template('template-projects.html',
+                                                             logo=config['server']['logo'],
+                                                             user=user_id, projects=[project])
+                        else:
+                            response = flask.jsonify({'status': 'failed',
+                                                      'message': f'project {project_id} not found'}), 500
+                            return response
+                    else:
+                        response = flask.jsonify({'status': 'failed',
+                                                  'message': f'access to {project_id} denied'}), 403
+                        return response
+                else:
+                    response = flask.jsonify({'status': 'failed',
+                                              'message': f'project {project_id} not found'}), 500
+                    return response
 
         ''' Add project '''
         if flask.request.method == 'PUT':
@@ -669,6 +715,8 @@ def projects(project_id=None):
                                     shutil.rmtree(path_dataset)
                                 except Exception as e:
                                     print(str(e))
+                                    _err = traceback.format_exc()
+                                    print(_err)
 
                             mongo.db.datasets.delete_many({'project_id': ObjectId(project_id)})
 
@@ -813,7 +861,9 @@ def projects(project_id=None):
     except Exception as _e:
         # FIXME: this is for debugging
         print(_e)
-        return str(_e)
+        _err = traceback.format_exc()
+        print(_err)
+        return _err
 
 
 ''' Datasets API '''
@@ -869,7 +919,7 @@ def datasets(project_id, dataset_id=None):
 
                             time_tag = utc_now().strftime('%Y%m%d_%H%M%S')
 
-                            response = flask.jsonify(classifications)
+                            response = jsonify(classifications, status=200)
 
                             response.headers['Content-Disposition'] = \
                                 f'attachment;filename={dataset_id}.{time_tag}.json'
@@ -979,6 +1029,8 @@ def datasets(project_id, dataset_id=None):
                                 shutil.rmtree(path_dataset)
                             except Exception as e:
                                 print(str(e))
+                                _err = traceback.format_exc()
+                                print(_err)
 
                             # clean up projects:
                             mongo.db.projects.update_one(
@@ -1004,7 +1056,9 @@ def datasets(project_id, dataset_id=None):
     except Exception as _e:
         # FIXME: this is for debugging
         print(_e)
-        return str(_e)
+        _err = traceback.format_exc()
+        print(_err)
+        return _err
 
 
 @app.route('/projects/<string:project_id>/datasets/<string:dataset_id>/classify', methods=['GET', 'POST', 'DELETE'])
@@ -1118,7 +1172,9 @@ def datasets_classify(project_id, dataset_id):
     except Exception as _e:
         # FIXME: this is for debugging
         print(_e)
-        return str(_e)
+        _err = traceback.format_exc()
+        print(_err)
+        return _err
 
 
 @app.route('/projects/<string:project_id>/datasets/<string:dataset_id>/inspect', methods=['GET', 'POST'])
@@ -1212,7 +1268,9 @@ def datasets_inspect(project_id, dataset_id):
     except Exception as _e:
         # FIXME: this is for debugging
         print(_e)
-        return str(_e)
+        _err = traceback.format_exc()
+        print(_err)
+        return _err
 
 
 if __name__ == '__main__':

@@ -12,46 +12,194 @@
     </style>
 {% endblock %}
 
-{% block nav_home %}
+{% block nav_projects %}
     active
 {% endblock %}
 
 {% block body_top %}
-    <div class="container align-items-center">
-        <div class="row justify-content-center align-items-center">
-            <div class="col-4">
-                <img class="align-self-start mr-5" style="width: 200px;"
-                     src="{{-script_root-}}/static/img/ZTF_CompactGrayLB.png"
-                     alt="Zwicky Transient Facility">
-            </div>
-            <div class="col-4">
-                <h2 class="mt-0">Zwickyverse</h2>
-                <p style="font-size: 1.2rem;">Simplifying and accelerating data-set labeling for ZTF machine learning activities</p>
-            </div>
-        </div>
-    </div>
+
 {% endblock %}
 
 {% block body %}
+    <div class="container">
+        <button type="button" class="btn btn-md btn-primary addButton"
+                data-toggle="modal" data-target="#addProjectModal"
+                data-user="{{-user-}}"><i class="fas fa-plus"></i> New project</button>
+        {% for project in projects %}
+            {% set project_id = project['_id'] | string %}
+            <div class="row mt-2">
+                <div class="col-md-12 mt-2">
+                    <h3>
+                        <a href="/projects/{{-project_id-}}">{{ project['name'] }}</a>
+                        {% if project['role'] == 'admin' %}
+                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                    data-toggle="modal" data-target="#editProjectModal"
+                                    data-user="{{-user-}}" data-projectid="{{-project_id-}}"
+                                    data-name="{{-project['name']-}}" data-description="{{-project['description']-}}">
+                                edit</button>
+                            <button type="button" class="btn btn-sm btn-outline-danger removeProjectButton"
+                                    data-projectid="{{-project_id-}}">
+                                remove</button>
+                        {% endif %}
+                    </h3>
+                    <p>
+                        <b>id:&nbsp{{-project_id-}}</b><br>
+                        {{ project['description'] }}<br>
+                        <a href="/projects/{{-project_id-}}?download=json">Project metadata <i class="fas fa-download"></i></a>
+                    </p>
 
-    <div class="container mt-2">
-        <div class="card-deck">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">My projects</h5>
-                    <p class="card-text">Manage projects. Add, classify, and inspect datasets.</p>
-                    <a href="/projects" class="btn btn-primary mt-1">My Projects</a>
+                    <div class="accordion mb-2" id="accordion_{{-project_id-}}">
+
+                        <div class="card">
+                            <div class="card-header p-0" id="accordion_{{-project_id-}}_headingOne">
+                                <h5 class="mb-0">
+                                    <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+                                            data-target="#accordion_{{-project_id-}}_collapseOne" aria-expanded="false"
+                                            aria-controls="accordion_{{-project_id-}}_collapseOne">
+                                        Classes
+                                    </button>
+                                </h5>
+                            </div>
+
+                            <div id="accordion_{{-project_id-}}_collapseOne" class="collapse"
+                                 aria-labelledby="accordion_{{-project_id-}}_headingOne"
+                                 data-parent="#accordion_{{-project_id-}}">
+                                <div class="card-body" style="max-height: 400px; overflow-x: hidden; overflow-y: scroll">
+                                    {% for class in project['classes'] %}
+                                        <span>{{ class }} <a href="#"><i class="fas fa-times"></i></a></span><br>
+                                    {% endfor %}
+                                    {% if project['classes'] | length > 0 %}
+                                        <br>
+                                    {% endif %}
+                                    {% if project['role'] == 'admin' %}
+                                    <a href="#" class="btn btn-sm btn-primary" data-projectid="{{-project_id-}}"
+                                            data-toggle="modal" data-target="#addDataClassesModal"><i class="fas fa-plus"></i> Add data classes</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if project['role'] == 'admin' %}
+                            <div class="card">
+                                <div class="card-header p-0" id="accordion_{{-project_id-}}_headingTwo">
+                                    <h5 class="mb-0">
+                                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+                                                data-target="#accordion_{{-project_id-}}_collapseTwo" aria-expanded="false"
+                                                aria-controls="accordion_{{-project_id-}}_collapseTwo">
+                                            Users
+                                        </button>
+                                    </h5>
+                                </div>
+                                <div id="accordion_{{-project_id-}}_collapseTwo" class="collapse"
+                                     aria-labelledby="accordion_{{-project_id-}}_headingTwo"
+                                     data-parent="#accordion_{{-project_id-}}">
+                                    <div class="card-body" style="max-height: 200px; overflow-x: hidden; overflow-y: scroll">
+                                        {% for u in project['users'] %}
+                                            <span>
+                                                <b>{{ u }}</b>: {{ project['users'][u]['role'] }}
+                                                {# TODO: #}
+                                                {% if u != user %}
+                                                    <a href="#"><i class="fas fa-pen"></i></a>
+                                                    <a href="#" class="removeUserLink"
+                                                       data-user="{{-u-}}"
+                                                       data-projectid="{{-project_id-}}"><i class="fas fa-times"></i></a>
+                                                {% endif %}
+                                            </span><br>
+                                        {% endfor %}
+                                        {% if project['users'] | length > 0 %}
+                                            <br>
+                                        {% endif %}
+                                        <a href="#" class="btn btn-sm btn-primary" data-projectid="{{-project_id-}}"
+                                                data-toggle="modal" data-target="#addUserModal"><i class="fas fa-plus"></i> Add user</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="card">
+                            <div class="card-header p-0" id="accordion_{{-project_id-}}_heading3">
+                                <h5 class="mb-0">
+                                    <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+                                            data-target="#accordion_{{-project_id-}}_collapse3" aria-expanded="false"
+                                            aria-controls="accordion_{{-project_id-}}_collapse3">
+                                        Datasets
+                                    </button>
+                                </h5>
+                            </div>
+
+                            <div id="accordion_{{-project_id-}}_collapse3" class="collapse"
+                                 aria-labelledby="accordion_{{-project_id-}}_heading3"
+                                 data-parent="#accordion_{{-project_id-}}">
+                                <div class="card-body">
+                                    {% for dataset in project['datasets'] %}
+                                        <div class="col-md-12">
+                                            <h4>
+                                                {{ project['datasets'][dataset]['name'] }}
+                                                <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}/classify"
+                                                   class="btn btn-sm btn-outline-dark">classify</a>
+                                                {% if project['role'] == 'admin' %}
+                                                    <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}/inspect"
+                                                       class="btn btn-sm btn-outline-dark">inspect</a>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                                            data-toggle="modal" data-target="#editDatasetModal"
+                                                            data-user="{{-user-}}">edit</button>
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-danger removeDatasetButton"
+                                                            data-datasetid="{{-dataset-}}"
+                                                            data-projectid="{{-project_id-}}">remove</button>
+                                                {% endif %}
+                                            </h4>
+                                            <p>
+                                                <b>id:&nbsp{{-dataset-}}</b><br>
+                                                {% if project['datasets'][dataset]['description'] != None %}
+                                                    {{ project['datasets'][dataset]['description'] }}
+                                                {% endif %}
+                                            </p>
+                                            <p>
+                                                Number of files: {{ project['datasets'][dataset]['num_files'] }}<br>
+                                                <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}?download=dataset&format=zip">Dataset <i class="fas fa-download"></i></a><br>
+                                                <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}?download=classifications&format=json">Classifications <i class="fas fa-download"></i></a>
+                                            </p>
+                                            {% if project['datasets'][dataset]['data'] | length > 0 %}
+                                                <p>
+                                                    <a class="btn btn-sm btn-outline-dark" data-toggle="collapse"
+                                                       href="#{{-project_id-}}_{{-dataset-}}_files" role="button"
+                                                       aria-expanded="false" aria-controls="{{-project_id-}}_{{-dataset-}}_files">
+                                                        Files <i class="fas fa-caret-down"></i>
+                                                    </a>
+                                                </p>
+                                                <div class="collapse" id="{{-project_id-}}_{{-dataset-}}_files">
+                                                    <div class="card">
+                                                        <div class="card-body p-1 pl-3" style="max-height: 200px; overflow-x: hidden;
+                                                                                                    overflow-y: scroll">
+                                                            {% for file in project['datasets'][dataset]['data'] %}
+                                                                <span>{{ file }}{#<a href="#"><i class="fas fa-times"></i></a>#}</span><br>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                    {% if project['role'] == 'admin' %}
+                                    <button type="button" class="btn btn-sm btn-primary" data-projectid="{{-project_id-}}"
+                                            data-toggle="modal" data-target="#addDatasetModal"><i class="fas fa-plus"></i> Add dataset</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
+
+{#                #}
+{#                <div class="col-md-12 mb-2">#}
+{#                    <hr>#}
+{#                </div>#}
             </div>
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Docs</h5>
-                    <p class="card-text">Tutorials, data description, python client etc...</p>
-                    <a href="/docs" class="btn btn-primary mt-1">Documentation</a>
-                </div>
-            </div>
-        </div>
+        {% endfor %}
     </div>
+
 
     <!-- Add Project Modal -->
     <div class="modal fade" tabindex="-1" role="dialog" id="addProjectModal">
