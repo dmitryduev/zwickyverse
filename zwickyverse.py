@@ -105,20 +105,55 @@ class Private(object):
         # should return either list of projects or dict with single project
         return resp.json()
 
-    def get_classifications(self, project_id: str='all', timeout: Num=60):
+    def get_classifications(self, project_id: str, dataset_id: str='all', timeout: Num=60):
         """
             Get project(s) metadata
         :param project_id:
+        :param dataset_id:
         :param timeout:
         :return:
         """
 
-        url = os.path.join(self.base_url, 'projects') \
-            if project_id == 'all' else os.path.join(self.base_url, 'projects', project_id)
-        resp = self.session.get(url=url, params={'download': 'json'}, timeout=timeout)
+        url_proj = os.path.join(self.base_url, 'projects', project_id)
 
-        # should return either list of projects or dict with single project
-        return resp.json()
+        if dataset_id != 'all':
+            # get classifications for dataset
+            url = os.path.join(url_proj, 'datasets', dataset_id)
+            resp = self.session.get(url=url, params={'download': 'classifications', 'format': 'json'},
+                                    timeout=timeout)
+            try:
+                dataset = resp.json()
+            except Exception as e:
+                if self.v:
+                    print(e)
+                    _err = traceback.format_exc()
+                    print(_err)
+                dataset = {}
+
+            return dataset
+
+        else:
+            # get classifications for all project's datasets
+            # get project first:
+            resp = self.session.get(url=url_proj, params={'download': 'json'}, timeout=timeout)
+            project = resp.json()
+
+            datasets = {}
+            for d_id in project['datasets']:
+                url = os.path.join(url_proj, 'datasets', d_id)
+                resp = self.session.get(url=url, params={'download': 'classifications', 'format': 'json'},
+                                        timeout=timeout)
+                try:
+                    dataset = resp.json()
+                except Exception as e:
+                    if self.v:
+                        print(e)
+                        _err = traceback.format_exc()
+                        print(_err)
+                    dataset = {}
+                datasets[d_id] = dataset
+
+            return datasets
 
 
 if __name__ == '__main__':
@@ -130,3 +165,7 @@ if __name__ == '__main__':
 
         ztf = p.get_project(project_id='5bdbe9f13610a1000f76abca')
         print(ztf)
+
+        ds = p.get_classifications(project_id=ztf['_id'], dataset_id='5bdbea1b3610a10014de7fc3')
+        # ds = p.get_classifications(project_id=ztf['_id'])
+        print(ds)
