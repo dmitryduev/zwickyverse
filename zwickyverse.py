@@ -40,10 +40,10 @@ class Private(object):
         self.username = username
         self.password = password
 
-        self.access_token = self.authenticate()
-
-        self.headers = {'Authorization': self.access_token}
         self.session = requests.Session()
+        self.authenticate()
+
+        # self.headers = {'Authorization': self.access_token}
 
     # use with "with":
     def __enter__(self):
@@ -77,24 +77,36 @@ class Private(object):
 
         # try:
         # post username and password, get access token
-        auth = requests.post(f'{self.base_url}/auth',
-                             json={"username": self.username, "password": self.password,
-                                   "penquins.__version__": __version__})
+        auth = self.session.post(os.path.join(self.base_url, 'login'),
+                                 json={"username": self.username, "password": self.password,
+                                       "zwickyverse.__version__": __version__})
 
-        if self.v:
-            print(auth.json())
+        resp = auth.json()
+        if 'message' in resp and resp['message'] == 'success':
+            if self.v:
+                print('Successfully authenticated')
 
-        if 'token' not in auth.json():
-            print('Authentication failed')
-            raise Exception(auth.json()['message'])
+        else:
+            msg = resp['message'] if 'message' in resp else 'unknown error'
+            raise Exception(f'Authentication error: {msg}')
 
-        access_token = auth.json()['token']
+    def get_project(self, progect_id: str='all', timeout: Num=10):
+        """
+            Get project(s) metadata
+        :param progect_id:
+        :param timeout:
+        :return:
+        """
 
-        if self.v:
-            print('Successfully authenticated')
+        url = os.path.join(self.base_url, 'projects') \
+            if progect_id == 'all' else os.path.join(self.base_url, 'projects', progect_id)
+        resp = self.session.get(url=url, params={'download': 'json'}, timeout=timeout)
 
-        return access_token
+        print(resp.text)
 
 
 if __name__ == '__main__':
-    pass
+
+    with Private(protocol='http', host='127.0.0.1', port=8000, username='admin', password='admin', verbose=True) as p:
+
+        p.get_project()
