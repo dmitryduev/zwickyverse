@@ -10,7 +10,7 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/static/img/ztf_logo.png"/>
 
-    <title>ZTF White Dwarfs: login</title>
+    <title>Zwickyverse: login</title>
 
     <!-- Fonts -->
     <link href='//fonts.googleapis.com/css?family=Lato:400,300,700' rel='stylesheet' type='text/css'>
@@ -43,13 +43,16 @@
     </div>
 {% endif %}
 
-<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+<nav class="navbar navbar-expand-md navbar-dark bg-primary fixed-top">
     <a class="navbar-brand" href="/"
        style="{% if logo_font_family | length>0 %}font-family: '{{ logo_font_family }}'{% endif %}">{{ logo }}</a>
 
     <ul class="navbar-nav mr-auto">
 {#        <li class="nav-item">#}
 {#            <a class="nav-link" href="/">Home</a>#}
+{#        </li>#}
+{#        <li class="nav-item">#}
+{#            <a class="nav-link" href="/search">Search</a>#}
 {#        </li>#}
     </ul>
 
@@ -62,14 +65,14 @@
 
 <div class="container h-100">
     <div class="row h-100 justify-content-center align-items-center">
-        <form action="/login" method="post" class="form-signin">
+        <form action="/login" method="post" class="form-signin" id="login_form">
             <div class="form-group">
-                <h2 class="form-signin-heading">Please log in</h2>
+                <h3 class="form-signin-heading">Please log in</h3>
                 <label for="username" class="sr-only">Username</label>
                 <input type="text" name="username" id="username" class="form-control" placeholder="Username" required>
                 <label for="password" class="sr-only">Password</label>
                 <input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
-                <button class="btn btn-lg btn-primary btn-block" type="submit">Log in</button>
+                <button type="button" class="btn btn-lg btn-primary btn-block" id="login_button">Log in</button>
             </div>
         </form>
     </div>
@@ -89,6 +92,44 @@
 
 {# show flashing messages #}
 <script>
+    // submit form programmatically
+    $(document).ready(function() {
+        $('#login_button').click(function () {
+            var credentials = {};
+            credentials["username"] = $('#username').val();
+            credentials["password"] = $('#password').val();
+            {#console.log(credentials);#}
+            $.ajax({url: '{{-script_root-}}/login',
+                method: 'POST',
+                data: JSON.stringify(credentials),
+                processData: false,
+                contentType: 'application/json',
+                success: function(data) {
+                    if (data['message'] === 'success') {
+                        {#console.log(document.referrer);#}
+                        {#console.log('hooray');#}
+                        if ((document.referrer.indexOf(window.location.host) !== -1) &&
+                            (document.referrer.indexOf("login") === -1)) {
+                            history.go(-1); return false;
+                            // window.location.href = '/';
+                        }
+                        else {
+                            window.location.href = '/';
+                        }
+                    }
+                    else {
+                        showFlashingMessage('Info:', 'Failed to log in: ' + data['message'], 'danger');
+                    }
+                },
+                error: function(data) {
+                    {#console.log('peechalj');#}
+                    showFlashingMessage('Info:', 'Failed to log in', 'danger');
+                }
+            });
+        });
+    });
+
+
     function showFlashingMessage(title, message, type) {
         $.notify({title: title, message: message},
             {placement: {

@@ -8,7 +8,7 @@ import requests
 from bson.json_util import loads
 
 
-''' PENQUINS - Processing ENormous Queries of ztf Users INStantaneously '''
+''' Zwickyverse: simplifying and accelerating data-set labeling for machine learning activities '''
 __version__ = '0.1.0'
 
 
@@ -16,21 +16,18 @@ Num = Union[int, float]
 QueryPart = Union['task', 'result']
 
 
-class Kowalski(object):
+class Private(object):
     """
-        Query ZTF TDA databases
+        Zwickyverse client
     """
 
-    # def __init__(self, protocol='http', host='127.0.0.1', port=8000, verbose=False,
-    #              username=None, password=None):
-
-    def __init__(self, protocol='https', host='kowalski.caltech.edu', port=443, verbose=False,
+    def __init__(self, protocol='https', host='private.caltech.edu', port=443, verbose=False,
                  username=None, password=None):
 
         assert username is not None, 'username must be specified'
         assert password is not None, 'password must be specified'
 
-        # Status, Kowalski!
+        # Status, Private!
         self.v = verbose
 
         self.protocol = protocol

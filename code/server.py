@@ -10,7 +10,7 @@ import flask
 import flask_login
 import flask_pymongo
 from flask_dropzone import Dropzone
-from flask_jwt_extended import JWTManager, jwt_required, jwt_optional, create_access_token, get_jwt_identity
+# from flask_jwt_extended import JWTManager, jwt_required, jwt_optional, create_access_token, get_jwt_identity
 import os
 import json
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -26,6 +26,12 @@ import traceback
 
 
 def jsonify(data, status=200):
+    """
+        Replacement for flask.jsonify with custom dumps
+    :param data:
+    :param status:
+    :return:
+    """
 
     return flask.Response(response=dumps(data), status=status, mimetype='application/json')
 
@@ -157,8 +163,8 @@ app.config["MONGO_URI"] = f"mongodb://{config['database']['user']}:{config['data
 mongo = flask_pymongo.PyMongo(app)
 
 # Setup the Flask-JWT-Extended extension
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=30)
-jwt = JWTManager(app)
+# app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=30)
+# jwt = JWTManager(app)
 
 # session lifetime for registered users
 app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=365)
@@ -231,40 +237,52 @@ def login():
     # print(flask.request.form['username'], flask.request.form['password'])
 
     # print(flask.request)
-
-    username = flask.request.form['username']
-    password = flask.request.form['password']
-    # check if username exists and passwords match
-    # look up in the database first:
-    select = mongo.db.users.find_one({'_id': username})
-    if select is not None and check_password_hash(select['password'], password):
-        user = User()
-        user.id = username
-
-        # get a JWT token to use API:
+    if flask.request.method == 'POST':
         try:
-            # post username and password, get access token
-            auth = requests.post('http://localhost:{}/auth'.format(config['server']['port']),
-                                 json={"username": username, "password": password})
-            access_token = auth.json()['access_token'] if 'access_token' in auth.json() else 'FAIL'
-        except Exception as e:
-            print(e)
+            username = flask.request.json.get('username', None)
+            password = flask.request.json.get('password', None)
+            if not username:
+                return jsonify({"msg": "Missing username parameter"}, status=400)
+            if not password:
+                return jsonify({"msg": "Missing password parameter"}, status=400)
+
+            # check if username exists and passwords match
+            # look up in the database first:
+            select = mongo.db.users.find_one({'_id': username})
+            if select is not None and check_password_hash(select['password'], password):
+                user = User()
+                user.id = username
+
+                # # get a JWT token to use API:
+                # try:
+                #     # post username and password, get access token
+                #     auth = requests.post('http://localhost:{}/auth'.format(config['server']['port']),
+                #                          json={"username": username, "password": password})
+                #     access_token = auth.json()['access_token'] if 'access_token' in auth.json() else 'FAIL'
+                # except Exception as e:
+                #     print(e)
+                #     _err = traceback.format_exc()
+                #     print(_err)
+                #     access_token = 'FAIL'
+                #
+                # user.access_token = access_token
+                # # print(user, user.id, user.access_token)
+                # # save to session:
+                # flask.session.permanent = True
+                # flask.session['access_token'] = access_token
+
+                flask_login.login_user(user, remember=True)
+                # return flask.redirect(flask.url_for('root'))
+                return jsonify({'message': 'success'}, status=200)
+
+            else:
+                raise Exception('Bad credentials')
+
+        except Exception as _e:
+            print(f'Got error: {str(_e)}')
             _err = traceback.format_exc()
             print(_err)
-            access_token = 'FAIL'
-
-        user.access_token = access_token
-        # print(user, user.id, user.access_token)
-        # save to session:
-        flask.session.permanent = True
-        flask.session['access_token'] = access_token
-
-        flask_login.login_user(user, remember=True)
-        return flask.redirect(flask.url_for('root'))
-    else:
-        # serve template with flag fail=True to display fail message
-        return flask.render_template('template-login.html', logo=config['server']['logo'],
-                                     messages=[(u'Failed to log in.', u'danger')])
+            return jsonify({'message': f'Failed to login user: {_err}'}, status=401)
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -273,9 +291,9 @@ def logout():
         Log user out
     :return:
     """
-    if 'access_token' in flask.session:
-        flask.session.pop('access_token')
-        flask.session.modified = True
+    # if 'access_token' in flask.session:
+    #     flask.session.pop('access_token')
+    #     flask.session.modified = True
 
     flask_login.logout_user()
     return flask.redirect(flask.url_for('root'))
@@ -461,39 +479,39 @@ def remove_user():
         flask.abort(403)
 
 
-@app.route('/auth', methods=['POST'])
-def auth():
-    """
-        Issue a JSON web token (JWT) for a registered user.
-        To be used with API
-    :return:
-    """
-    try:
-        if not flask.request.is_json:
-            return jsonify({"msg": "Missing JSON in request"}, status=400)
-
-        username = flask.request.json.get('username', None)
-        password = flask.request.json.get('password', None)
-        if not username:
-            return jsonify({"msg": "Missing username parameter"}, status=400)
-        if not password:
-            return jsonify({"msg": "Missing password parameter"}, status=400)
-
-        # check if username exists and passwords match
-        # look up in the database first:
-        select = mongo.db.users.find_one({'_id': username})
-        if select is not None and check_password_hash(select['password'], password):
-            # Identity can be any data that is json serializable
-            access_token = create_access_token(identity=username)
-            return jsonify({'access_token': access_token}, status=200)
-        else:
-            return jsonify({"msg": "Bad username or password"}, status=401)
-
-    except Exception as _e:
-        print(_e)
-        _err = traceback.format_exc()
-        print(_err)
-        return jsonify({"msg": "Something unknown went wrong"}, status=400)
+# @app.route('/auth', methods=['POST'])
+# def auth():
+#     """
+#         Issue a JSON web token (JWT) for a registered user.
+#         To be used with API
+#     :return:
+#     """
+#     try:
+#         if not flask.request.is_json:
+#             return jsonify({"msg": "Missing JSON in request"}, status=400)
+#
+#         username = flask.request.json.get('username', None)
+#         password = flask.request.json.get('password', None)
+#         if not username:
+#             return jsonify({"msg": "Missing username parameter"}, status=400)
+#         if not password:
+#             return jsonify({"msg": "Missing password parameter"}, status=400)
+#
+#         # check if username exists and passwords match
+#         # look up in the database first:
+#         select = mongo.db.users.find_one({'_id': username})
+#         if select is not None and check_password_hash(select['password'], password):
+#             # Identity can be any data that is json serializable
+#             access_token = create_access_token(identity=username)
+#             return jsonify({'access_token': access_token}, status=200)
+#         else:
+#             return jsonify({"msg": "Bad username or password"}, status=401)
+#
+#     except Exception as _e:
+#         print(_e)
+#         _err = traceback.format_exc()
+#         print(_err)
+#         return jsonify({"msg": "Something unknown went wrong"}, status=400)
 
 
 @app.route('/data/<path:filename>')
@@ -585,7 +603,8 @@ def projects(project_id=None):
                     # web endpoint
                     return flask.render_template('template-projects.html',
                                                  logo=config['server']['logo'],
-                                                 user=user_id, projects=projects)
+                                                 user=user_id, add_new=True,
+                                                 projects=projects)
                 elif download == 'json':
                     # client
                     return jsonify(projects, status=200)
@@ -638,7 +657,8 @@ def projects(project_id=None):
                                 # web end-point: display single project
                                 return flask.render_template('template-projects.html',
                                                              logo=config['server']['logo'],
-                                                             user=user_id, projects=[project])
+                                                             user=user_id, add_new=False,
+                                                             projects=[project])
                         else:
                             response = flask.jsonify({'status': 'failed',
                                                       'message': f'project {project_id} not found'}), 500

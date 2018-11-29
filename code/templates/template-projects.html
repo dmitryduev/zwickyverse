@@ -22,9 +22,11 @@
 
 {% block body %}
     <div class="container">
+        {% if add_new %}
         <button type="button" class="btn btn-md btn-primary addButton"
                 data-toggle="modal" data-target="#addProjectModal"
                 data-user="{{-user-}}"><i class="fas fa-plus"></i> New project</button>
+        {% endif %}
         {% for project in projects %}
             {% set project_id = project['_id'] | string %}
             <div class="row mt-2">
