@@ -18,6 +18,7 @@
     "path_app": "/app",
     "path_logs": "/app/logs/",
     "path_data": "/data/",
+    "path_docs": "/app/doc",
     "path_tmp": "/app/_tmp/",
     "help": {
       "self": "path to all kinds of stuff. these are internal container paths",

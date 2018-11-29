@@ -11,6 +11,7 @@ import flask_login
 import flask_pymongo
 from flask_dropzone import Dropzone
 # from flask_jwt_extended import JWTManager, jwt_required, jwt_optional, create_access_token, get_jwt_identity
+from misaka import Markdown, HtmlRenderer
 import os
 import json
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -23,6 +24,11 @@ from ast import literal_eval
 import requests
 import numpy as np
 import traceback
+
+
+''' markdown rendering '''
+rndr = HtmlRenderer()
+md = Markdown(rndr, extensions=('fenced-code',))
 
 
 def jsonify(data, status=200):
@@ -557,9 +563,10 @@ def root():
                                  user=user_id)
 
 
-@app.route('/docs', methods=['GET'])
+@app.route('/docs', defaults={'doc': ''}, methods=['GET'])
+@app.route('/docs/<string:doc>', methods=['GET'])
 @flask_login.login_required
-def docs():
+def docs(doc):
     """
 
     :return:
@@ -568,9 +575,32 @@ def docs():
     ''' web endpoint: home page '''
     user_id = str(flask_login.current_user.id)
 
-    return flask.render_template('template-docs.html',
-                                 logo=config['server']['logo'],
-                                 user=user_id)
+    if len(doc) == 0:
+        return flask.render_template('template-docs.html',
+                                     logo=config['server']['logo'],
+                                     user=user_id)
+
+    else:
+        # serve individual docs
+        try:
+            title = doc.replace('_', ' ').capitalize()
+
+            # render doc with misaka
+            with open(os.path.join(config['path']['path_docs'],
+                                   doc + '.md'), 'r') as f:
+                tut = f.read()
+
+            content = md(tut)
+
+            return flask.Response(stream_template('template-doc.html',
+                                                  user=user_id, logo=config['server']['logo'],
+                                                  title=title, content=content))
+
+        except Exception as e:
+            print(e)
+            return flask.render_template('template-docs.html',
+                                         logo=config['server']['logo'],
+                                         user=user_id)
 
 
 ''' Projects API '''
