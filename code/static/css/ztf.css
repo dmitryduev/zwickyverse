@@ -1,13 +1,9 @@
 html {
     position: relative;
     min-height: 100%;
-    font-weight: lighter !important;
+    font-weight: 400 !important;
 }
 body {
-    display: -ms-flexbox;
-  display: flex;
-  -ms-flex-align: center;
-  align-items: center;
     /*font-family: 'Roboto', sans-serif !important;*/
     /*padding-top: 2.2rem;*/
     padding-top: 2.9rem;
