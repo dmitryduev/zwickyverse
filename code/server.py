@@ -728,7 +728,7 @@ def projects(project_id=None):
             classes = flask.request.json.get('classes', '')
 
             if (len(name) == 0) or (len(description) == 0) or (len(classes) == 0):
-                return 'all fields are compulsory'
+                return jsonify({'status': 'failed', 'message': 'all fields are compulsory'}, 400)
 
             classes = sorted(list(set(classes.split())))
 
@@ -752,7 +752,7 @@ def projects(project_id=None):
                 }}
             )
 
-            return 'success'
+            return jsonify({'status': 'success', 'project_id': str(project_id.inserted_id)}, 200)
 
         ''' Delete project '''
         if flask.request.method == 'DELETE':
@@ -796,7 +796,7 @@ def projects(project_id=None):
                                 multi=True
                             )
 
-                            return 'success'
+                            return jsonify({'status': 'success'}, 200)
                         else:
                             flask.abort(403)
                             # return f'user {user_id} is not admin for project_id {project_id}'
@@ -805,9 +805,9 @@ def projects(project_id=None):
                         # return f'user {user_id} not on project_id {project_id}'
 
                 else:
-                    return f'project_id {project_id} not found'
+                    return jsonify({'status': 'failed', 'message': f'project_id {project_id} not found'}, 400)
             else:
-                return 'project_id not defined'
+                return jsonify({'status': 'failed', 'message': 'project_id not defined'}, 400)
 
         ''' Modify project '''
         if flask.request.method == 'POST':
@@ -839,7 +839,7 @@ def projects(project_id=None):
                             # editing project metadata?
                             if (edit_name is not None) and (edit_description is not None):
                                 if (len(edit_name) == 0) or (len(edit_description) == 0):
-                                    return 'all fields are compulsory'
+                                    return jsonify({'status': 'failed', 'message': 'all fields are compulsory'}, 400)
 
                                 # edit in db:
                                 project_id = mongo.db.projects.update_one(
@@ -853,7 +853,7 @@ def projects(project_id=None):
                             if add_classes is not None:
 
                                 if len(add_classes) == 0:
-                                    return 'classes must be set'
+                                    return jsonify({'status': 'failed', 'message': 'classes must be set'}, 400)
 
                                 classes = add_classes.split()
 
@@ -872,7 +872,8 @@ def projects(project_id=None):
                             # adding user?
                             if add_user is not None and add_user_role is not None:
                                 if add_user_role not in ('user', 'admin'):
-                                    return f'role {add_user_role} not recognized'
+                                    return jsonify({'status': 'failed',
+                                                    'message': f'role {add_user_role} not recognized'}, 400)
                                 _tmp = mongo.db.users.find_one({'_id': add_user}, {'_id': 1})
                                 if _tmp is not None and len(_tmp) > 0:
                                     # check if user already assigned to project:
@@ -881,7 +882,10 @@ def projects(project_id=None):
                                                                       f'permissions.{project_id}': {'$exists': True}},
                                                                      {'_id': 1})
                                     if select is not None and len(select) > 0:
-                                        return f'user {add_user} already assigned to project {project_id}'
+                                        return jsonify({'status': 'failed',
+                                                        'message':
+                                                            f'user {add_user} already assigned to project {project_id}'},
+                                                       400)
 
                                     mongo.db.users.update_one(
                                         {'_id': add_user},
@@ -891,7 +895,7 @@ def projects(project_id=None):
                                         }}
                                     )
                                 else:
-                                    return f'user {add_user} not found'
+                                    return jsonify({'status': 'failed', 'message': f'user {add_user} not found'}, 400)
 
                             # removing user?
                             if remove_user is not None:
@@ -899,7 +903,7 @@ def projects(project_id=None):
                                 _tmp = mongo.db.users.find_one({'_id': remove_user}, {'_id': 1})
                                 if _tmp is not None and len(_tmp) > 0:
                                     if remove_user == user_id:
-                                        return 'cannot remove thyself!'
+                                        return jsonify({'status': 'failed', 'message': 'cannot remove thyself!'}, 400)
 
                                     mongo.db.users.update_one(
                                         {'_id': remove_user},
@@ -909,9 +913,10 @@ def projects(project_id=None):
                                     )
 
                                 else:
-                                    return f'user {remove_user} not found'
+                                    return jsonify({'status': 'failed', 'message': f'user {remove_user} not found'},
+                                                   400)
 
-                            return 'success'
+                            return jsonify({'status': 'success'}, 200)
                         else:
                             flask.abort(403)
                             # return f'user {user_id} is not admin for project_id {project_id}'
@@ -930,7 +935,7 @@ def projects(project_id=None):
         print(_e)
         _err = traceback.format_exc()
         print(_err)
-        return _err
+        return jsonify({'status': 'failed', 'message': _err}, 500)
 
 
 ''' Datasets API '''
@@ -970,7 +975,7 @@ def datasets(project_id, dataset_id=None):
                                                   headers={'Content-Disposition':
                                                            f'attachment;filename={dataset_id}.{time_tag}.zip'})
                         else:
-                            return 'unknown format', 500
+                            return jsonify({'status': 'failed', 'message': 'unknown format'}, status=400)
 
                     elif download == 'classifications':
                         if download_format == 'json':
@@ -993,10 +998,10 @@ def datasets(project_id, dataset_id=None):
 
                             return response
                         else:
-                            return 'unknown format', 500
+                            return jsonify({'status': 'failed', 'message': 'unknown format'}, status=400)
 
                     else:
-                        return 'bad download request', 500
+                        return jsonify({'status': 'failed', 'message': 'bad download request'}, status=400)
 
                 # TODO: display single dataset
                 return flask.redirect(flask.url_for('root'))
@@ -1012,7 +1017,7 @@ def datasets(project_id, dataset_id=None):
                     description = flask.request.json.get('description', '')
 
                     if (len(name) == 0) or (len(description) == 0):
-                        return 'all fields are compulsory'
+                        return jsonify({'status': 'failed', 'message': 'all fields are compulsory'}, status=400)
 
                     # add to db:
                     dataset_inserted = mongo.db.datasets.insert_one(
@@ -1066,13 +1071,13 @@ def datasets(project_id, dataset_id=None):
                             # print(f.filename)
                             # save file:
                             f.save(os.path.join(path_save, f.filename))
-                    return '', 204
+                    return jsonify({'status': 'success'}, 204)
 
                 else:
-                    return f'dataset_id {dataset_id} not found'
+                    return jsonify({'status': 'failed', 'message': f'dataset_id {dataset_id} not found'}, status=400)
 
             else:
-                return 'dataset_id not defined'
+                return jsonify({'status': 'failed', 'message': 'dataset_id not defined'}, status=400)
 
         ''' Delete dataset '''
         if flask.request.method == 'DELETE':
@@ -1107,7 +1112,7 @@ def datasets(project_id, dataset_id=None):
                                 }}
                             )
 
-                            return 'success'
+                            return jsonify({'status': 'success'}, 200)
                         else:
                             flask.abort(403)
                             # return f'user {user_id} is not admin for project_id {project_id}'
@@ -1116,16 +1121,16 @@ def datasets(project_id, dataset_id=None):
                         # return f'user {user_id} not on project_id {project_id}'
 
                 else:
-                    return f'project_id {project_id} not found'
+                    return jsonify({'status': 'failed', 'message': f'dataset_id {dataset_id} not found'}, status=400)
             else:
-                return 'project_id not defined'
+                return jsonify({'status': 'failed', 'message': 'dataset_id not defined'}, status=400)
 
     except Exception as _e:
         # FIXME: this is for debugging
         print(_e)
         _err = traceback.format_exc()
         print(_err)
-        return _err
+        return jsonify({'status': 'failed', 'message': _err}, status=500)
 
 
 @app.route('/projects/<string:project_id>/datasets/<string:dataset_id>/classify', methods=['GET', 'POST', 'DELETE'])
@@ -1241,7 +1246,7 @@ def datasets_classify(project_id, dataset_id):
         print(_e)
         _err = traceback.format_exc()
         print(_err)
-        return _err
+        return jsonify({'status': 'failed', 'message': _err}, status=500)
 
 
 @app.route('/projects/<string:project_id>/datasets/<string:dataset_id>/inspect', methods=['GET', 'POST'])
@@ -1337,7 +1342,7 @@ def datasets_inspect(project_id, dataset_id):
         print(_e)
         _err = traceback.format_exc()
         print(_err)
-        return _err
+        return jsonify({'status': 'failed', 'message': _err}, status=500)
 
 
 if __name__ == '__main__':

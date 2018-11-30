@@ -503,11 +503,11 @@
                         processData: false,
                         contentType: 'application/json',
                         success: function(data) {
-                            if (data === 'success') {
+                            if (data['status'] === 'success') {
                                 location.reload(true);
                             }
                             else {
-                                showFlashingMessage('Info:', data, 'danger');
+                                showFlashingMessage('Info:', data['message'], 'danger');
                             }
                         },
                         error: function(data) {
@@ -555,12 +555,12 @@
                 processData: false,
                 contentType: 'application/json',
                 success: function(data) {
-                    if (data === 'success') {
+                    if (data['status'] === 'success') {
                         location.reload(true);
                     }
                     else {
                         $('#addProjectModal').modal('hide');
-                        showFlashingMessage('Info:', data, 'danger');
+                        showFlashingMessage('Info:', data['message'], 'danger');
                     }
                 },
                 error: function(data) {
@@ -580,12 +580,12 @@
                 processData: false,
                 contentType: 'application/json',
                 success: function(data) {
-                    if (data === 'success') {
+                    if (data['status'] === 'success') {
                         location.reload(true);
                     }
                     else {
                         $('#editProjectModal').modal('hide');
-                        showFlashingMessage('Info:', data, 'danger');
+                        showFlashingMessage('Info:', data['message'], 'danger');
                     }
                 },
                 error: function(data) {
@@ -608,11 +608,11 @@
                         processData: false,
                         contentType: 'application/json',
                         success: function(data) {
-                            if (data === 'success') {
+                            if (data['status'] === 'success') {
                                 location.reload(true);
                             }
                             else {
-                                showFlashingMessage('Info:', data, 'danger');
+                                showFlashingMessage('Info:', data['message'], 'danger');
                             }
                         },
                         error: function(data) {
@@ -635,12 +635,12 @@
                 processData: false,
                 contentType: 'application/json',
                 success: function(data) {
-                    if (data === 'success') {
+                    if (data['status'] === 'success') {
                         location.reload(true);
                     }
                     else {
                         $('#addDataClassesModal').modal('hide');
-                        showFlashingMessage('Info:', data, 'danger');
+                        showFlashingMessage('Info:', data['message'], 'danger');
                     }
                 },
                 error: function(data) {
@@ -660,12 +660,12 @@
                 processData: false,
                 contentType: 'application/json',
                 success: function(data) {
-                    if (data === 'success') {
+                    if (data['status'] === 'success') {
                         location.reload(true);
                     }
                     else {
                         $('#addUserModal').modal('hide');
-                        showFlashingMessage('Info:', data, 'danger');
+                        showFlashingMessage('Info:', data['message'], 'danger');
                     }
                 },
                 error: function(data) {
@@ -688,12 +688,12 @@
                         processData: false,
                         contentType: 'application/json',
                         success: function(data) {
-                            if (data === 'success') {
+                            if (data['status'] === 'success') {
                                 location.reload(true);
                             }
                             else {
                                 $('#addUserModal').modal('hide');
-                                showFlashingMessage('Info:', data, 'danger');
+                                showFlashingMessage('Info:', data['message'], 'danger');
                             }
                         },
                         error: function(data) {
