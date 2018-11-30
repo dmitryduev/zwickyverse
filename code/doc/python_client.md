@@ -17,7 +17,7 @@ pip install git+https://github.com/dmitryduev/zwickyverse.git
 
 #### Quick start
 
-Define your server info and the access credentials and connect to it:
+Connect to the server running Zwickyverse with your access credentials:
 
 ```python
 from zwickyverse import Private
@@ -86,6 +86,6 @@ print(ds)
 Get classifications for all datasets from this project:
 
 ```python
-ds = p.get_classifications(project_id=p_id, dataset_id=ds_id)
+ds = p.get_classifications(project_id=p_id)
 print(ds)
 ```
