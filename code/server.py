@@ -1060,18 +1060,21 @@ def datasets(project_id, dataset_id=None):
 
                 if _tmp is not None and len(_tmp) > 0:
                     # print('GETTING FILES')
+                    # not sure why I did it this way :)
                     # print(flask.request.form['dataset_id'])
-                    dataset_id_post = flask.request.form['dataset_id']
+                    # dataset_id_post = flask.request.form['dataset_id']
+                    dataset_id_post = dataset_id
                     path_save = os.path.join(config['path']['path_data'], 'datasets', dataset_id_post)
                     if not os.path.exists(path_save):
                         os.makedirs(path_save)
 
+                    # print(flask.request.files)
                     for key, f in flask.request.files.items():
                         if key.startswith('file'):
-                            # print(f.filename)
+                            print(f.filename)
                             # save file:
                             f.save(os.path.join(path_save, f.filename))
-                    return jsonify({'status': 'success'}, 204)
+                    return jsonify({'status': 'success'}, status=204)
 
                 else:
                     return jsonify({'status': 'failed', 'message': f'dataset_id {dataset_id} not found'}, status=400)

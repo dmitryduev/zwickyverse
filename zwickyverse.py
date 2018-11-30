@@ -211,14 +211,18 @@ class Private(object):
 
         # upload files
         if len(files) > 0:
-            fs = {os.path.basename(fl): open(fl, 'rb') for fl in files}
+            fs = {'file_' + os.path.basename(fl): open(fl, 'rb') for fl in files}
+            # print(fs)
             url_dataset = os.path.join(self.base_url, 'projects', project_id, 'datasets', dataset_id)
             resp = self.session.post(url_dataset, files=fs)
+            # print(resp)
+            # print(resp.text)
 
-            if resp.json()['status'] == 'success':
-                return dataset_id
-            else:
-                raise Exception(resp.json()['message'])
+            # if resp.json()['status'] == 'success':
+            #     return dataset_id
+            # else:
+            #     raise Exception(resp.json()['message'])
+        return dataset_id
 
 
 if __name__ == '__main__':
