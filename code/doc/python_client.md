@@ -33,7 +33,8 @@ p = Private(protocol=protocol, host=host, port=port, username=username, password
 
 Set `verbose=True` if you want more feedback from Private.
 
-<span class="badge badge-secondary">Note</span> `Private` object is a context manager, so can be used with a `with` statement:
+<span class="badge badge-secondary">Note</span> `Private` object is a context manager, and can therefore be used 
+with a `with` statement:
 
 ```python
 with Private(protocol=protocol, host=host, port=port, username=username, password=password) as p:
