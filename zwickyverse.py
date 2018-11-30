@@ -223,35 +223,3 @@ class Private(object):
             # else:
             #     raise Exception(resp.json()['message'])
         return dataset_id
-
-
-if __name__ == '__main__':
-
-    with Private(protocol='http', host='127.0.0.1', port=8000, username='admin', password='admin', verbose=True) as p:
-
-        # get metadata of all projects
-        projects = p.get_project()
-        print(projects)
-
-        p_id = '5bdbe9f13610a1000f76abca'
-        # get metadata for single project
-        ztf = p.get_project(project_id=p_id)
-        print(ztf)
-
-        # get classifications for single dataset from this project
-        ds_id = '5bdbea1b3610a10014de7fc3'
-        ds = p.get_classifications(project_id=p_id, dataset_id=ds_id)
-        # get classifications for all datasets from this project
-        # ds = p.get_classifications(project_id=ztf['_id'])
-        print(ds)
-
-        # add project
-        p_id = p.add_project(name='Streaks', description='Example streaks', classes=('keep', 'ditch'))
-        print(f'created project: {p_id}')
-
-        # add dataset to the newly created project
-        path = os.path.abspath('./dev')
-        images = glob.glob(os.path.join(path, '*.jpg'))  # image absolute paths
-        print(images)
-        ds_id = p.add_dataset(project_id=p_id, name='Reals', description='Short streaks', files=images)
-        print(f'created dataset in project {p_id}: {ds_id}')
