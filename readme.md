@@ -72,6 +72,23 @@ docker run -it --rm --name zwickyverse -p 8000:4000 -v zwickyverse-volume:/data 
 The service will be available on port 8000 of the `Docker` host machine
 
 
+---
+
+### Python client library `zwickyverse`
+
+Install the client library [zwickyverse.py](https://github.com/dmitryduev/zwickyverse/blob/master/zwickyverse.py), 
+with `pip` into your environment:
+
+```bash
+pip install git+https://github.com/dmitryduev/zwickyverse.git
+```
+
+`zwickyverse` is very lightweight and only depends on `pymongo` and `requests`.
+
+See documentation for details about library usage.
+
+---
+
 ### Screenshots
 
 ![](doc/screenshot01.png)
