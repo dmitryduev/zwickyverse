@@ -210,8 +210,15 @@ class Private(object):
         dataset_id = resp.json()['dataset_id']
 
         # upload files
+        if len(files) > 0:
+            fs = {os.path.basename(fl): open(fl, 'rb') for fl in files}
+            url_dataset = os.path.join(self.base_url, 'projects', project_id, 'datasets', dataset_id)
+            resp = self.session.post(url_dataset, files=fs)
 
-        return dataset_id
+            if resp.json()['status'] == 'success':
+                return dataset_id
+            else:
+                raise Exception(resp.json()['message'])
 
 
 if __name__ == '__main__':
