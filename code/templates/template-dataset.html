@@ -18,8 +18,13 @@
     <div class="container-fluid mt-2">
         <div class="row">
             <div class="col-12">
-                <h3>Dataset:&nbsp; {{-dataset['name']-}}</h3>
-                <h5>id:&nbsp; {{-dataset['_id'] | string-}}</h5>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/projects/{{ project_id }}">{{ project_id }}</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ dataset_id }}</li>
+                    </ol>
+                </nav>
+                <h4>Dataset:&nbsp; {{-dataset['name']-}}</h4>
                 <p>{{-dataset['description']-}}</p>
             </div>
         </div>
@@ -42,10 +47,16 @@
                     <i id="expansion_toggle" class="fas fa-adjust" aria-hidden="true"></i>
                 </button>
 
+{#                <button type="button" class="btn btn-outline-dark"#}
+{#                        style="cursor: pointer;" onclick="shuffle_rows()"#}
+{#                        data-toggle="tooltip" data-placement="top" title="Shuffle rows">#}
+{#                    <i id="expansion_toggle" class="fas fa-random" aria-hidden="true"></i>#}
+{#                </button>#}
+
                 <button type="button" class="btn btn-outline-dark"
-                        style="cursor: pointer;" onclick="shuffle_rows()"
-                        data-toggle="tooltip" data-placement="top" title="Shuffle rows">
-                    <i id="expansion_toggle" class="fas fa-random" aria-hidden="true"></i>
+                        style="cursor: pointer;" onclick="mark_rows()"
+                        data-toggle="tooltip" data-placement="top" title="Toggle class for all rows">
+                    <i id="expansion_toggle" class="fas fa-check-square" aria-hidden="true"></i>
                 </button>
 
                 <button type="button" class="btn btn-outline-dark" id="save"
@@ -301,6 +312,35 @@
         {# shuffle rows #}
         function shuffle_rows(){
             alert('Not implemented yet')
+        }
+
+        {# mark all rows #}
+        function mark_rows(){
+            bootbox.confirm({
+                message: "<br>Toggle class for all items on this page:<br><select class='form-control mt-1' id='markAllSelect'>\n" +
+                    "    {% for class in classes %}\n"+
+                        "    <option>{{-class-}}</option>\n"+
+                        "    {% endfor %}\n" +
+                    "</select>",
+                buttons: {
+                    cancel: {
+                        label: '<i class="fas fa-times"></i> Cancel'
+                    },
+                    confirm: {
+                        label: '<i class="fas fa-check"></i> Confirm'
+                    }
+                },
+                callback: function (result) {
+                    // console.log('This was logged in the callback: ' + result);
+                    // confirmed?
+                    if (result) {
+                        // get select value
+                        let cls = document.getElementById("markAllSelect").value;
+                        // run jquery
+                        $("input[type=checkbox][value=" + cls + "]").click();
+                    }
+                }
+            });
         }
 
 

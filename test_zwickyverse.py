@@ -12,7 +12,8 @@ class TestZwickyverse(object):
 
     def test_authenticate(self, username, password):
         # if authentication fails, exception will be raised
-        Private(username=username, password=password)
+        with Private(username=username, password=password) as p:
+            pass
 
     def test_api(self, username, password):
         # with Private(protocol='http', host='127.0.0.1', port=8000, username='admin', password='admin', verbose=True) as p:
