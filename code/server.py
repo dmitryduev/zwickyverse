@@ -983,7 +983,7 @@ def datasets(project_id, dataset_id=None):
                                                    f'permissions.{project_id}.classifications.{dataset_id}':
                                                        {'$exists': True}},
                                               {'_id': 0, f'permissions.{project_id}.classifications.{dataset_id}': 1})
-                            if len(classifications) > 0:
+                            if classifications is not None and len(classifications) > 0:
                                 classifications = \
                                     classifications['permissions'][project_id]['classifications'][dataset_id]
                             else:
