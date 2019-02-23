@@ -167,7 +167,7 @@
                                                 <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}?download=classifications&format=json">Classifications <i class="fas fa-download"></i></a>
                                                 {% if project['role'] == 'admin' %}
                                                 <br>
-                                                <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}?download=classifications_all_users&format=json">Classifications from all users<i class="fas fa-download"></i></a>
+                                                <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}?download=classifications_all_users&format=json">Classifications from all users <i class="fas fa-download"></i></a>
                                                 {% endif %}
                                             </p>
                                             {% if project['datasets'][dataset]['data'] | length > 0 %}
