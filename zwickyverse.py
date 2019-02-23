@@ -143,21 +143,24 @@ class Private(object):
         """
         raise NotImplementedError()
 
-    def get_classifications(self, project_id: str, dataset_id: str='all', timeout: Num=60):
+    def get_classifications(self, project_id: str, dataset_id: str = 'all', all_users: bool = False, timeout: Num = 60):
         """
             Get project(s) metadata
         :param project_id:
         :param dataset_id:
+        :param all_users:
         :param timeout:
         :return:
         """
 
         url_proj = os.path.join(self.base_url, 'projects', project_id)
 
+        download = 'classifications_all_users' if all_users else 'classifications'
+
         if dataset_id != 'all':
             # get classifications for dataset
             url = os.path.join(url_proj, 'datasets', dataset_id)
-            resp = self.session.get(url=url, params={'download': 'classifications', 'format': 'json'},
+            resp = self.session.get(url=url, params={'download': download, 'format': 'json'},
                                     timeout=timeout)
             try:
                 dataset = resp.json()
@@ -179,7 +182,7 @@ class Private(object):
             datasets = {}
             for d_id in project['datasets']:
                 url = os.path.join(url_proj, 'datasets', d_id)
-                resp = self.session.get(url=url, params={'download': 'classifications', 'format': 'json'},
+                resp = self.session.get(url=url, params={'download': download, 'format': 'json'},
                                         timeout=timeout)
                 try:
                     dataset = resp.json()

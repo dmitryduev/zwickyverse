@@ -77,16 +77,30 @@ project = p.get_project(project_id=p_id)
 print(project)
 ```
 
-Get classifications for the dataset from this project:
+Get own classifications for the dataset from this project:
 
 ```python
 ds = p.get_classifications(project_id=p_id, dataset_id=ds_id)
 print(ds)
 ```
 
-Get classifications for all datasets from this project:
+Get classifications from all users for the dataset from this project (must be project admin):
+
+```python
+ds = p.get_classifications(project_id=p_id, dataset_id=ds_id, all_users=True)
+print(ds)
+```
+
+Get own classifications for all datasets from this project:
 
 ```python
 ds = p.get_classifications(project_id=p_id)
+print(ds)
+```
+
+Get classifications from all users for all datasets from this project (must be project admin):
+
+```python
+ds = p.get_classifications(project_id=p_id, all_users=True)
 print(ds)
 ```

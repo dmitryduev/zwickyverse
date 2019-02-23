@@ -1067,6 +1067,49 @@ def datasets(project_id, dataset_id=None):
                         else:
                             return jsonify({'status': 'failed', 'message': 'unknown format'}, status=400)
 
+                    elif download == 'classifications_all_users':
+                        # check user is admin for the project:
+                        permissions = mongo.db.users.find_one({'_id': user_id}, {'_id': 0, 'permissions': 1})[
+                            'permissions']
+                        if project_id in permissions:
+                            if permissions[project_id]['role'] == 'admin':
+                                if download_format == 'json':
+                                    # classified by everyone
+                                    project_users = mongo.db.users.find(
+                                        {f'permissions.{project_id}': {'$exists': True}}, {'_id': 1})
+                                    project_users = [pu['_id'] for pu in project_users]
+
+                                    classifications_all_users = dict()
+                                    for pu in project_users:
+                                        cs_u = mongo.db.users.find_one({'_id': pu,
+                                                       f'permissions.{project_id}.classifications.{dataset_id}':
+                                                           {'$exists': True}},
+                                                      {'_id': 0,
+                                                       f'permissions.{project_id}.classifications.{dataset_id}': 1})
+                                        if cs_u is not None and len(cs_u) > 0:
+                                            cs = cs_u['permissions'][project_id]['classifications'][dataset_id]
+                                            for key in cs:
+                                                if key in classifications_all_users:
+                                                    classifications_all_users[key] += cs[key]
+                                                else:
+                                                    classifications_all_users[key] = cs[key]
+
+                                    time_tag = utc_now().strftime('%Y%m%d_%H%M%S')
+
+                                    response = jsonify(classifications_all_users, status=200)
+
+                                    response.headers['Content-Disposition'] = \
+                                        f'attachment;filename={dataset_id}.{time_tag}.json'
+
+                                    return response
+
+                                else:
+                                    return jsonify({'status': 'failed', 'message': 'unknown format'}, status=400)
+                            else:
+                                flask.abort(403)
+                        else:
+                            flask.abort(403)
+
                     else:
                         return jsonify({'status': 'failed', 'message': 'bad download request'}, status=400)
 
