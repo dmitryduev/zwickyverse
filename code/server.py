@@ -636,6 +636,8 @@ def projects(project_id=None):
                         project['users'] = dict(ChainMap(*[{pu['_id']: pu['permissions'][f'{project_id}']}
                                                            for pu in project_users]))
 
+
+
                     # datasets:
                     for dataset in project['datasets']:
                         project['datasets'][dataset] = mongo.db.datasets.find_one({'_id': ObjectId(dataset)},
@@ -693,6 +695,39 @@ def projects(project_id=None):
                                 path_dataset = os.path.join(config['path']['path_data'], 'datasets', dataset)
                                 project['datasets'][dataset]['num_files'] = len(next(os.walk(path_dataset))[2]) \
                                     if os.path.exists(path_dataset) else 0
+
+                            # classified by user
+                            cl = mongo.db.users.find_one({'_id': user_id},
+                                                         {'_id': 0,
+                                                          f'permissions.{project_id}.classifications': 1})
+                            for d_id in project['datasets']:
+                                if d_id in cl['permissions'][project_id]['classifications']:
+                                    project['datasets'][d_id]['num_classified'] = \
+                                        len(cl['permissions'][project_id]['classifications'][d_id].keys())
+                                else:
+                                    project['datasets'][d_id]['num_classified'] = 0
+
+                            # classified by everyone
+                            if project['role'] == 'admin':
+                                classified = dict()
+                                for pu in project['users'].keys():
+                                    cl = mongo.db.users.find_one({'_id': pu},
+                                                                 {'_id': 0,
+                                                                  f'permissions.{project_id}.classifications': 1})
+                                    # print(pu, cl)
+                                    for d_id in cl['permissions'][project_id]['classifications']:
+                                        if d_id not in classified:
+                                            classified[d_id] = \
+                                                set(cl['permissions'][project_id]['classifications'][d_id].keys())
+                                        else:
+                                            classified[d_id] = classified[d_id] | \
+                                                set(cl['permissions'][project_id]['classifications'][d_id].keys())
+                                # print(classified)
+                                for d_id in project['datasets']:
+                                    if d_id in classified:
+                                        project['datasets'][d_id]['num_classified_all_users'] = len(classified[d_id])
+                                    else:
+                                        project['datasets'][d_id]['num_classified_all_users'] = 0
 
                             if download == 'json':
                                 # json:

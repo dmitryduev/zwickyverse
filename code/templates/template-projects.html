@@ -158,7 +158,11 @@
                                                 {% endif %}
                                             </p>
                                             <p>
-                                                Number of files: {{ project['datasets'][dataset]['num_files'] }}<br>
+                                                Number of objects: {{ project['datasets'][dataset]['num_files'] }}<br>
+                                                Number of classifications: {{ project['datasets'][dataset]['num_classified'] }}<br>
+                                                {% if project['role'] == 'admin' %}
+                                                Number of classifications by all users: {{ project['datasets'][dataset]['num_classified_all_users'] }}<br>
+                                                {% endif %}
                                                 <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}?download=dataset&format=zip">Dataset <i class="fas fa-download"></i></a><br>
                                                 <a href="/projects/{{-project_id-}}/datasets/{{-dataset-}}?download=classifications&format=json">Classifications <i class="fas fa-download"></i></a>
                                             </p>
