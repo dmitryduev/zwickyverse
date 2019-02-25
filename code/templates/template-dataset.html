@@ -257,10 +257,13 @@
         else {
             document.addEventListener('DOMContentLoaded', function () {
                 if( $('#table').length ) {
-                    resetTableHeight();
+                    setTimeout(resetTableHeight(), 1000);
                 }
             });
         }
+        $('#table').on('page-change.bs.table', function () {
+          setTimeout(resetTableHeight(), 1000);
+        });
 
 
         // on accordion collapse/show
