@@ -2,10 +2,15 @@
 
 {% block css %}
     <link rel="stylesheet" href="{{-script_root-}}/static/css/bootstrap-table.css">
+{#    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.13.5/dist/bootstrap-table.min.css">#}
+
     <style>
         .preview-img {
             {#max-width: 100%;#}
             max-width: 800px;
+        }
+        .checkbox-lg{
+            transform:scale(2, 2);
         }
     </style>
 {% endblock %}
@@ -110,8 +115,11 @@
 {% block js %}
     <!-- Bootstrap table -->
     <script src="{{-script_root-}}/static/js/bootstrap-table.js"></script>
+{#    <script src="https://unpkg.com/bootstrap-table@1.13.5/dist/bootstrap-table.min.js"></script>#}
     <script src="{{-script_root-}}/static/js/bootstrap-table-en-US.js"></script>
-    <script src="{{-script_root-}}/static/js/tableExport.js"></script>
+{#    <script src="https://unpkg.com/bootstrap-table@1.13.5/dist/locale/bootstrap-table-en-US.min.js"></script>#}
+
+<script src="{{-script_root-}}/static/js/tableExport.js"></script>
     <script src="{{-script_root-}}/static/js/bootstrap-table-export.js"></script>
     <script src="{{-script_root-}}/static/js/FileSaver.min.js"></script>
     <script src="{{-script_root-}}/static/js/bootstrap-table-multiple-sort.js"></script>
@@ -168,7 +176,7 @@
                         "object": "<b>{{-obj-}}</b><br><img src='/data/datasets/{{-dataset_id-}}/{{obj}}' class='preview-img' style='max-width: 800px;'>",
                         {% for class in classes %}
                             "{{-class-}}": "<div class='form-check'>"+
-                                "<input onclick='checkbox(\"{{-obj-}}_{{-class-}}\")' class='label-checkbox' style='font-size: 1.5rem;' type='checkbox' id='{{-obj-}}_{{-class-}}' data-id='{{-obj-}}' value='{{-class-}}'{% if class in objz[obj] %} checked='checked'{% endif %}>{%-if inspect-%}: {{ objz[obj].count(class) }}{%-endif-%}"+
+                                "<input onclick='checkbox(\"{{-obj-}}_{{-class-}}\")' class='label-checkbox checkbox-lg' style='font-size: 1.5rem;' type='checkbox' id='{{-obj-}}_{{-class-}}' data-id='{{-obj-}}' value='{{-class-}}'{% if class in objz[obj] %} checked='checked'{% endif %}>{%-if inspect-%}&nbsp;&nbsp;&nbsp;: {{ objz[obj].count(class) }}{%-endif-%}"+
                                 {#"<label class='form-check-label' for='{{-obj-}}_{{-class-}}'>{{ class }}{%-if inspect-%}: {{ objz[obj].count(class) }}{%-endif-%}</label>"+#}
                                 "</div>",
                         {% endfor %}
@@ -241,6 +249,19 @@
                 resetTableHeight();
             }
         });
+        if( document.readyState !== 'loading' ) {
+            if( $('#table').length ) {
+                resetTableHeight();
+            }
+        }
+        else {
+            document.addEventListener('DOMContentLoaded', function () {
+                if( $('#table').length ) {
+                    resetTableHeight();
+                }
+            });
+        }
+
 
         // on accordion collapse/show
         $('#coordinatesTab').on('hidden.bs.collapse', function () {

@@ -529,7 +529,7 @@ def data_static(filename):
     :return:
     """
     _p, _f = os.path.split(filename)
-    print(_p, _f)
+    # print(_p, _f)
     return flask.send_from_directory(os.path.join(config['path']['path_data'], _p), _f)
 
 
@@ -1181,7 +1181,7 @@ def datasets(project_id, dataset_id=None):
                     # print(flask.request.files)
                     for key, f in flask.request.files.items():
                         if key.startswith('file'):
-                            print(f.filename)
+                            # print(f.filename)
                             # save file:
                             f.save(os.path.join(path_save, f.filename))
                     return jsonify({'status': 'success'}, status=204)
