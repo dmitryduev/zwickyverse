@@ -264,6 +264,9 @@
         $('#table').on('page-change.bs.table', function () {
           setTimeout(resetTableHeight(), 1000);
         });
+        $('#table').on('post-body.bs.table', function () {
+          setTimeout(resetTableHeight(), 1000);
+        });
 
 
         // on accordion collapse/show
