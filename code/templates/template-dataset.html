@@ -241,6 +241,7 @@
             // on load
             if( $('#table').length ) {
                 resetTableHeight();
+                setTimeout(resetTableHeight(), 5000);
             }
         });
         $(window).resize(function () {
